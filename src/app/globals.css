@@ -103,6 +103,43 @@ h3 {
   color: var(--canvas);
 }
 
+/* White pill for use over imagery. */
+.btn-white {
+  background: var(--canvas);
+  color: var(--graphite);
+}
+.btn-white:hover {
+  background: var(--ember);
+  color: var(--canvas);
+}
+
+/* Entrance: fade up. Delay is set inline per element. */
+.reveal {
+  opacity: 0;
+  animation: reveal 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Entrance: each headline line slides up out of a mask. */
+.reveal-line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.08em;
+}
+.reveal-line > span {
+  display: block;
+  transform: translateY(105%);
+  animation: reveal-line 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+}
+
+@keyframes reveal {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes reveal-line {
+  to { transform: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -3,20 +3,20 @@
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { brandStat, featured, formatPrice } from "@/data/products";
+import { featured, formatPrice } from "@/data/products";
 import { useDevice } from "@/lib/useDevice";
+import { useInView } from "@/lib/useInView";
 
-const HeroScene = dynamic(() => import("./three/HeroScene"), { ssr: false });
+const TourScene = dynamic(() => import("./three/TourScene"), { ssr: false });
 
-const STAGES = featured.length + 1;
-
-// A tall section with a pinned 3D stage: scrolling through it walks the bottle
-// from the brand intro through each featured formula.
-export default function HomeHero() {
+// A pinned 3D stage: scrolling through it turns the bottle and walks through
+// each featured formula, with its lead active's percentage bent by the glass.
+export default function FormulaTour() {
   const section = useRef<HTMLElement>(null);
   const progress = useRef(0);
   const [stage, setStage] = useState(0);
   const { quality, reducedMotion } = useDevice();
+  const [stageRef, inView] = useInView<HTMLDivElement>();
 
   useEffect(() => {
     const onScroll = () => {
@@ -26,7 +26,7 @@ export default function HomeHero() {
       const travel = rect.height - window.innerHeight;
       const p = Math.min(1, Math.max(0, -rect.top / travel));
       progress.current = p;
-      setStage(Math.min(STAGES - 1, Math.floor(p * STAGES)));
+      setStage(Math.min(featured.length - 1, Math.floor(p * featured.length)));
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -38,10 +38,11 @@ export default function HomeHero() {
   }, []);
 
   return (
-    <section ref={section} style={{ height: `${STAGES * 100}svh` }} className="relative">
-      <div className="sticky top-0 h-svh overflow-hidden">
+    <section ref={section} style={{ height: `${featured.length * 100}svh` }} className="relative">
+      <div ref={stageRef} className="sticky top-0 h-svh overflow-hidden">
         <div className="absolute inset-0" aria-hidden>
-          <HeroScene
+          <TourScene
+            active={inView}
             products={featured}
             stage={stage}
             progress={progress}
@@ -50,36 +51,21 @@ export default function HomeHero() {
           />
         </div>
 
-        {/* Intro */}
-        <Panel visible={stage === 0} className="justify-end pb-10 md:pb-14">
-          <div className="flex items-end justify-between gap-8">
-            <div>
-              <h1 className="display max-w-[11ch] text-[clamp(2.4rem,4.6vw,4rem)] !leading-[1]">
-                Formulas you can see through
-              </h1>
-              <div className="mt-7 flex flex-wrap items-center gap-4">
-                <Link href="/shop" className="btn">Shop the formulas</Link>
-                <span className="hidden text-sm text-smoke sm:inline">Scroll to turn the bottle ↓</span>
-              </div>
-            </div>
-          </div>
-        </Panel>
-        <Annotations
-          visible={stage === 0}
-          items={[{ value: brandStat.value, label: "Natural origin" }, { value: "0%", label: "Fragrance" }]}
-        />
+        <p className="pointer-events-none absolute left-5 top-28 text-sm text-smoke md:left-10 lg:left-16">
+          Inside the formula
+        </p>
 
         {featured.map((p, i) => (
           <div key={p.slug}>
-            <Panel visible={stage === i + 1} className="justify-end pb-[6svh] md:justify-center md:pb-0">
+            <Panel visible={stage === i} className="justify-end pb-[6svh] md:justify-center md:pb-0">
               <div className="max-w-sm rounded-[10px] border border-mist bg-canvas/85 p-5 backdrop-blur-md md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
                 <p className="text-sm text-smoke">
                   {p.kind} · {p.variants.at(-1)!.label}
                 </p>
-                <h2 className="display mt-3 text-[clamp(2rem,4.4vw,3.6rem)]">{p.name}</h2>
+                <h2 className="display mt-3 text-[clamp(2.2rem,4.6vw,3.6rem)]">{p.name}</h2>
                 <p className="mt-4 hidden max-w-[30ch] text-smoke sm:block">{p.tagline}</p>
                 {/* Actives sit beside the bottle on desktop; listed here on phones. */}
-                <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-sm md:hidden">
+                <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-sm lg:hidden">
                   {p.actives.map((a) => (
                     <li key={a.name}>
                       <span className="tabular-nums">{a.percent}%</span> <span className="text-smoke">{a.name}</span>
@@ -93,24 +79,23 @@ export default function HomeHero() {
               </div>
             </Panel>
             <Annotations
-              visible={stage === i + 1}
+              visible={stage === i}
               items={p.actives.map((a) => ({ value: `${a.percent}%`, label: a.name }))}
             />
           </div>
         ))}
 
-        {/* Which formula you're on */}
         <ol className="absolute bottom-8 right-10 hidden gap-5 md:flex" aria-label="Featured formulas">
           {featured.map((p, i) => (
             <li
               key={p.slug}
               className={`flex items-center gap-2 text-xs transition-colors duration-500 ${
-                stage === i + 1 ? "text-ink" : "text-smoke"
+                stage === i ? "text-ink" : "text-smoke"
               }`}
             >
               <span
                 className={`h-1.5 w-1.5 rounded-full transition-colors duration-500 ${
-                  stage === i + 1 ? "bg-ember" : "bg-mist"
+                  stage === i ? "bg-ember" : "bg-mist"
                 }`}
               />
               {p.name}

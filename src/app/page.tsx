@@ -1,5 +1,6 @@
 import Link from "next/link";
-import HomeHero from "@/components/HomeHero";
+import FormulaTour from "@/components/FormulaTour";
+import Hero from "@/components/Hero";
 import Newsletter from "@/components/Newsletter";
 import ProductCard from "@/components/ProductCard";
 import { DropIcon, LeafIcon, RabbitIcon, RecycleIcon } from "@/components/icons";
@@ -22,7 +23,7 @@ const RITUAL = [
 export default function Home() {
   return (
     <>
-      <HomeHero />
+      <Hero />
 
       {/* Featured formulas */}
       <section className="mx-auto max-w-[1280px] px-5 py-20 md:px-10">
@@ -61,6 +62,8 @@ export default function Home() {
           ))}
         </ul>
       </section>
+
+      <FormulaTour />
 
       {/* Every active, at its real concentration */}
       <section className="mx-auto max-w-[1280px] px-5 py-20 md:px-10">

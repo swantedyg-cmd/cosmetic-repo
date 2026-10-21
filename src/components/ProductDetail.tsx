@@ -9,7 +9,7 @@ import { useDevice } from "@/lib/useDevice";
 
 const ProductViewer = dynamic(() => import("./three/ProductViewer"), {
   ssr: false,
-  loading: () => <div className="h-full w-full animate-pulse bg-mist/60" />,
+  loading: () => <div className="h-full w-full animate-pulse bg-[#f9ebe1]" />,
 });
 
 export default function ProductDetail({ product }: { product: Product }) {
@@ -21,9 +21,9 @@ export default function ProductDetail({ product }: { product: Product }) {
 
   return (
     <div className="mx-auto grid max-w-7xl gap-10 px-5 pb-24 pt-32 md:grid-cols-[1.2fr_1fr] md:gap-16 md:px-12">
-      <div className="relative h-[60svh] overflow-hidden rounded-[15px] md:sticky md:top-28 md:h-[calc(100svh-8rem)]">
+      <div className="relative h-[60svh] overflow-hidden rounded-[15px] bg-[#f9ebe1] md:sticky md:top-28 md:h-[calc(100svh-8rem)]">
         <ProductViewer
-          shape={product.shape}
+          product={product}
           color={variant.color ?? product.color}
           quality={quality}
           reducedMotion={reducedMotion}

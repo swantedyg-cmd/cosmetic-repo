@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import BottleSilhouette from "@/components/BottleSilhouette";
+import CardStage from "@/components/three/CardStage";
 import { formatPrice, getProduct } from "@/data/products";
 import { useCart } from "@/lib/cart";
 
@@ -28,8 +28,8 @@ export default function CartPage() {
               if (!p || !v) return null;
               return (
                 <li key={`${i.slug}-${i.variantId}`} className="flex items-center gap-5 py-5">
-                  <div className="flex h-20 w-16 shrink-0 items-end justify-center rounded-[10px] bg-[#f6f6f6] p-2">
-                    <BottleSilhouette shape={p.shape} color={v.color ?? p.color} />
+                  <div className="relative h-20 w-16 shrink-0 overflow-hidden rounded-[10px] bg-[#f8e4d6]">
+                    <CardStage product={p} color={v.color} />
                   </div>
                   <div className="flex-1">
                     <Link href={`/shop/${p.slug}`} className="font-medium hover:text-ember">{p.name}</Link>

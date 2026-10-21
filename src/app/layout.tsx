@@ -3,6 +3,7 @@ import { Onest } from "next/font/google";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import EmailModal from "@/components/EmailModal";
+import ViewLayer from "@/components/ViewLayer";
 import { CartProvider } from "@/lib/cart";
 import "./globals.css";
 
@@ -22,6 +23,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <main className="flex-1">{children}</main>
           <Footer />
           <EmailModal />
+          <ViewLayer />
         </CartProvider>
       </body>
     </html>
