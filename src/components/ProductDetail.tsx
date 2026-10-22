@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import Link from "next/link";
+import { productPhotos } from "@/data/photos";
 import { formatPrice, type Product } from "@/data/products";
 import { useCart } from "@/lib/cart";
 import { useDevice } from "@/lib/useDevice";
@@ -15,20 +17,68 @@ const ProductViewer = dynamic(() => import("./three/ProductViewer"), {
 export default function ProductDetail({ product }: { product: Product }) {
   const [variant, setVariant] = useState(product.variants[0]);
   const [added, setAdded] = useState(false);
+  const [view, setView] = useState<"3d" | number>("3d");
+  const photos = productPhotos[product.slug];
   const { add } = useCart();
   const { quality, reducedMotion } = useDevice();
   const maxPercent = Math.max(...product.actives.map((a) => a.percent));
 
   return (
     <div className="mx-auto grid max-w-7xl gap-10 px-5 pb-24 pt-32 md:grid-cols-[1.2fr_1fr] md:gap-16 md:px-12">
-      <div className="relative h-[60svh] overflow-hidden rounded-[15px] bg-[#f9ebe1] md:sticky md:top-28 md:h-[calc(100svh-8rem)]">
-        <ProductViewer
-          product={product}
-          color={variant.color ?? product.color}
-          quality={quality}
-          reducedMotion={reducedMotion}
-        />
-        <p className="label pointer-events-none absolute bottom-4 left-5 text-smoke">Drag to turn · scroll to zoom</p>
+      <div className="md:sticky md:top-28 md:h-[calc(100svh-8rem)]">
+        <div className="relative h-[60svh] overflow-hidden rounded-[15px] bg-[#f9ebe1] md:h-[calc(100%-5.5rem)]">
+          <div className={`absolute inset-0 transition-opacity duration-700 ${view === "3d" ? "opacity-100" : "pointer-events-none opacity-0"}`}>
+            <ProductViewer
+              product={product}
+              color={variant.color ?? product.color}
+              quality={quality}
+              reducedMotion={reducedMotion}
+            />
+            <p className="label pointer-events-none absolute bottom-4 left-5 text-smoke">Drag to turn · scroll to zoom</p>
+          </div>
+          {photos.map((ph, i) => (
+            <Image
+              key={ph.src}
+              src={ph.src}
+              alt={ph.alt}
+              fill
+              priority={i === 0}
+              sizes="(min-width: 768px) 55vw, 100vw"
+              className={`object-cover transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                view === i ? "scale-100 opacity-100" : "pointer-events-none scale-105 opacity-0"
+              }`}
+            />
+          ))}
+        </div>
+        {/* Media switcher: the live 3D bottle first, then the photographs. */}
+        <div className="mt-3 flex gap-2" role="tablist" aria-label="Product media">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={view === "3d"}
+            onClick={() => setView("3d")}
+            className={`flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-[10px] border-[1.5px] bg-[#f9ebe1] text-xs font-medium transition-colors ${
+              view === "3d" ? "border-ember text-ember" : "border-transparent text-ink hover:border-apricot"
+            }`}
+          >
+            3D
+          </button>
+          {photos.map((ph, i) => (
+            <button
+              key={ph.src}
+              type="button"
+              role="tab"
+              aria-selected={view === i}
+              aria-label={ph.alt}
+              onClick={() => setView(i)}
+              className={`relative h-[4.5rem] w-[4.5rem] overflow-hidden rounded-[10px] border-[1.5px] transition-colors ${
+                view === i ? "border-ember" : "border-transparent hover:border-apricot"
+              }`}
+            >
+              <Image src={ph.src} alt="" fill sizes="72px" className="object-cover" />
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="md:pt-10">

@@ -30,7 +30,7 @@ export default function Hero() {
           <li
             key={a.label}
             className="reveal flex items-center gap-4"
-            style={{ animationDelay: `${1600 + i * 150}ms` }}
+            style={{ animationDelay: `calc(var(--intro) + ${1200 + i * 150}ms)` }}
           >
             <span className="h-px w-14 bg-ink/60" />
             <span>
@@ -47,16 +47,16 @@ export default function Hero() {
       <div className="pointer-events-none absolute inset-x-0 bottom-0 px-5 pb-10 md:px-10 md:pb-14 lg:px-16">
         <h1 className="display text-[clamp(2.4rem,min(5vw,10svh),4.75rem)] !leading-[0.98]">
           <span className="reveal-line block overflow-hidden">
-            <span className="block" style={{ animationDelay: "900ms" }}>Skincare you can</span>
+            <span className="block" style={{ animationDelay: "calc(var(--intro) + 500ms)" }}>Skincare you can</span>
           </span>{" "}
           <span className="reveal-line block overflow-hidden">
-            <span className="block" style={{ animationDelay: "1020ms" }}>see through</span>
+            <span className="block" style={{ animationDelay: "calc(var(--intro) + 620ms)" }}>see through</span>
           </span>
         </h1>
-        <p className="reveal mt-5 max-w-[34ch] text-ink/70" style={{ animationDelay: "1250ms" }}>
+        <p className="reveal mt-5 max-w-[34ch] text-ink/70" style={{ animationDelay: "calc(var(--intro) + 850ms)" }}>
           Clear glass, short formulas, and every active printed at its exact percentage.
         </p>
-        <div className="reveal pointer-events-auto mt-7 flex flex-wrap items-center gap-5" style={{ animationDelay: "1400ms" }}>
+        <div className="reveal pointer-events-auto mt-7 flex flex-wrap items-center gap-5" style={{ animationDelay: "calc(var(--intro) + 1000ms)" }}>
           <Link href="/shop" className="btn btn-white">Shop the formulas</Link>
           <span className="hidden text-sm text-ink/60 md:inline">Click a bottle to open it</span>
         </div>

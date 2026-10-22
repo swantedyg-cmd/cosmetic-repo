@@ -150,3 +150,98 @@ h3 {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ---------- Scroll reveals (toggled by <Reveal>) ---------- */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(32px);
+  transition:
+    opacity 1s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 1.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: var(--delay, 0ms);
+}
+/* Images open from the bottom edge like a shutter, settling from a slight zoom. */
+[data-reveal="clip"] {
+  opacity: 1;
+  transform: none;
+  clip-path: inset(100% 0 0 0 round 15px);
+  transition: clip-path 1.4s cubic-bezier(0.77, 0, 0.18, 1);
+  transition-delay: var(--delay, 0ms);
+}
+[data-reveal="clip"] img {
+  transform: scale(1.18);
+  transition: transform 2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: var(--delay, 0ms);
+}
+[data-reveal].is-in {
+  opacity: 1;
+  transform: none;
+  clip-path: inset(0 0 0 0 round 15px);
+}
+[data-reveal="clip"].is-in img {
+  transform: scale(1);
+}
+
+/* ---------- Marquee ---------- */
+.marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 48s linear infinite;
+}
+.marquee:hover {
+  animation-play-state: paused;
+}
+@keyframes marquee {
+  to { transform: translateX(-50%); }
+}
+
+/* ---------- Intro curtain (skipped after the first view per tab) ---------- */
+:root {
+  --intro: 1300ms;
+}
+.intro-seen {
+  --intro: 0ms;
+}
+.intro-seen .intro {
+  display: none;
+}
+.intro {
+  animation: intro-lift 1s cubic-bezier(0.77, 0, 0.18, 1) 1.15s forwards;
+}
+.intro-word > span {
+  display: inline-block;
+  transform: translateY(110%);
+  animation: reveal-line 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.intro-bar {
+  transform-origin: left;
+  transform: scaleX(0);
+  animation: intro-bar 1s cubic-bezier(0.65, 0, 0.35, 1) 0.1s forwards;
+}
+@keyframes intro-lift {
+  to { transform: translateY(-100%); visibility: hidden; }
+}
+@keyframes intro-bar {
+  to { transform: scaleX(1); }
+}
+
+/* Lenis smooth scroll */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal],
+  [data-reveal] img {
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+  }
+  .marquee {
+    animation: none;
+  }
+}

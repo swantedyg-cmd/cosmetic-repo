@@ -14,6 +14,9 @@ import { getProduct, type Product } from "@/data/products";
 
 const FLOOR = -1.6;
 
+// Hold the set's entrance until the intro curtain has lifted (first view per tab only).
+const introDelay = () => (document.documentElement.classList.contains("intro-seen") ? 0 : 1.2);
+
 const SET: { slug: string; x: number; z: number; plinth: number; radius: number }[] = [
   { slug: "veil-barrier-cream", x: -1.35, z: 0.35, plinth: 0.45, radius: 0.86 },
   { slug: "dew-serum", x: 0.1, z: -0.7, plinth: 1.25, radius: 0.62 },
@@ -67,16 +70,16 @@ function Rig({ children, reducedMotion }: { children: React.ReactNode; reducedMo
   // Fit the ~5 unit wide set into the frame; on desktop it sits right of the headline.
   // Scale against both axes so caps never slide under the header on short screens.
   const scale = wide
-    ? Math.min(0.85, viewport.width / 12.5, viewport.height / 5.6)
+    ? Math.min(0.85, viewport.width / 13.5, viewport.height / 5.8)
     : Math.min(0.72, viewport.width / 6.8, viewport.height / 8.5);
   // The set spans roughly x -2.2 → 3.2, so shift it left by its centre (0.5) on phones.
-  const offsetX = wide ? viewport.width * 0.06 : -0.5 * scale;
+  const offsetX = wide ? viewport.width * 0.13 : -0.5 * scale;
   const offsetY = wide ? -viewport.height * 0.1 : viewport.height * 0.06;
   const start = useRef<number | null>(null);
 
   useFrame((state) => {
-    if (start.current === null) start.current = state.clock.elapsedTime;
-    const t = state.clock.elapsedTime - start.current;
+    if (start.current === null) start.current = state.clock.elapsedTime + introDelay();
+    const t = Math.max(0, state.clock.elapsedTime - start.current);
     // Intro dolly: the camera eases in from further back.
     const intro = reducedMotion ? 1 : 1 - Math.pow(1 - Math.min(1, t / 2.4), 4);
     const px = reducedMotion ? 0 : state.pointer.x * 0.45;
@@ -123,8 +126,8 @@ function Piece({
 
   useFrame((state, dt) => {
     if (!plinthRef.current || !bottle.current) return;
-    if (start.current === null) start.current = state.clock.elapsedTime;
-    const t = state.clock.elapsedTime - start.current;
+    if (start.current === null) start.current = state.clock.elapsedTime + introDelay();
+    const t = Math.max(0, state.clock.elapsedTime - start.current);
 
     // Staggered rise: plinth grows out of the floor, then the bottle settles onto it.
     const rise = (delay: number) =>

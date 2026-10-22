@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import CardStage from "@/components/three/CardStage";
+import Image from "next/image";
+import { productPhotos } from "@/data/photos";
 import { formatPrice, getProduct } from "@/data/products";
 import { useCart } from "@/lib/cart";
 
@@ -29,7 +30,7 @@ export default function CartPage() {
               return (
                 <li key={`${i.slug}-${i.variantId}`} className="flex items-center gap-5 py-5">
                   <div className="relative h-20 w-16 shrink-0 overflow-hidden rounded-[10px] bg-[#f8e4d6]">
-                    <CardStage product={p} color={v.color} />
+                    <Image src={productPhotos[p.slug][0].src} alt={productPhotos[p.slug][0].alt} fill sizes="64px" className="object-cover" />
                   </div>
                   <div className="flex-1">
                     <Link href={`/shop/${p.slug}`} className="font-medium hover:text-ember">{p.name}</Link>
