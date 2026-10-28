@@ -7,6 +7,8 @@ import { BagIcon, SearchIcon, UserIcon } from "./icons";
 
 const NAV = [
   { href: "/shop", label: "Shop" },
+  { href: "/routine", label: "Routine finder" },
+  { href: "/ingredients", label: "Ingredients" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ];
@@ -25,7 +27,7 @@ export default function Header() {
           <Link href="/" className="text-[15px] font-semibold uppercase tracking-[-0.02em] text-ink">
             Solenne
           </Link>
-          <nav className="absolute left-1/2 hidden -translate-x-1/2 gap-6 text-sm text-ink md:flex">
+          <nav className="absolute left-1/2 hidden -translate-x-1/2 gap-6 text-sm text-ink lg:flex">
             {NAV.map((n) => (
               <Link
                 key={n.href}
@@ -53,7 +55,7 @@ export default function Header() {
                 </span>
               )}
             </Link>
-            <Link href="/shop" className="text-sm md:hidden">Shop</Link>
+            <Link href="/shop" className="text-sm lg:hidden">Shop</Link>
           </div>
         </div>
       </div>

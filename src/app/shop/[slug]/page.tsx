@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import ProductDetail from "@/components/ProductDetail";
+import ProductExtras from "@/components/ProductExtras";
 import { getProduct, products } from "@/data/products";
 
 type Params = PageProps<"/shop/[slug]">["params"];
@@ -28,5 +29,10 @@ async function Product({ params }: { params: Params }) {
   const { slug } = await params;
   const product = getProduct(slug);
   if (!product) notFound();
-  return <ProductDetail product={product} />;
+  return (
+    <>
+      <ProductDetail product={product} />
+      <ProductExtras product={product} />
+    </>
+  );
 }

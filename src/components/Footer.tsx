@@ -7,6 +7,8 @@ export default function Footer() {
         <p className="max-w-xs text-sm text-smoke">Skincare in clear glass, with every percentage on the label.</p>
         <ul className="space-y-2 text-sm">
           <li><Link href="/shop" className="hover:text-ember">Shop</Link></li>
+          <li><Link href="/routine" className="hover:text-ember">Routine finder</Link></li>
+          <li><Link href="/ingredients" className="hover:text-ember">Ingredient index</Link></li>
           <li><Link href="/about" className="hover:text-ember">About</Link></li>
           <li><Link href="/contact" className="hover:text-ember">Contact</Link></li>
         </ul>

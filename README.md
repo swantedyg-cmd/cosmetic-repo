@@ -21,7 +21,21 @@ npm run build
 | Colours and fonts | `src/app/globals.css`, `src/app/layout.tsx` |
 | Bag (saved in the browser) | `src/lib/cart.tsx` |
 
+## Sections added (Oct 2026)
+
+| What | File |
+|---|---|
+| Routine finder (3 questions → ordered routine, CSS 3D layer stack) | `src/app/routine`, `src/components/RoutineFinder.tsx`, `LayerStack.tsx` |
+| Ingredient index (A–Z, our % vs typical range) | `src/app/ingredients`, `src/components/IngredientIndex.tsx`, `src/data/ingredients.ts` |
+| Reviews by skin type (home + product pages) | `src/components/Reviews.tsx`, `src/data/reviews.ts` |
+| Refill programme | `src/components/Refill.tsx` |
+| Product page: reviews, "Layers well with", FAQ | `src/components/ProductExtras.tsx` |
+
 ## Placeholders to replace with client info
+
+- **Reviews are samples** — replace with real, verified reviews (Judge.me / Yotpo / Shopify) before launch
+- Ingredient descriptions and "usually X–Y%" ranges — confirm with the formulator
+- Refill programme details (pods, return labels) and FAQ policies (shipping, returns, vegan claim)
 
 - Brand name "Solenne", logo, palette, fonts
 - All products, prices, percentages and copy

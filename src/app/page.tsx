@@ -6,6 +6,9 @@ import Lookbook from "@/components/Lookbook";
 import Marquee from "@/components/Marquee";
 import Newsletter from "@/components/Newsletter";
 import ProductCard from "@/components/ProductCard";
+import Refill from "@/components/Refill";
+import Reviews from "@/components/Reviews";
+import RoutineTeaser from "@/components/RoutineTeaser";
 import Reveal from "@/components/Reveal";
 import TextureStudy from "@/components/TextureStudy";
 import { DropIcon, LeafIcon, RabbitIcon, RecycleIcon } from "@/components/icons";
@@ -95,6 +98,9 @@ export default function Home() {
             <p className="mt-6 max-w-sm text-smoke">
               No “infused with” and no proprietary blends. If it does the work, its share of the formula is printed here.
             </p>
+            <Link href="/ingredients" className="mt-6 inline-block text-sm underline decoration-apricot decoration-[1.5px] underline-offset-[6px] hover:text-ember">
+              See what each one does
+            </Link>
           </Reveal>
           <div className="divide-y divide-mist border-y border-mist">
             {products.map((p, i) => (
@@ -155,6 +161,9 @@ export default function Home() {
         </div>
       </section>
 
+      <RoutineTeaser />
+      <Reviews />
+      <Refill />
       <Newsletter />
     </>
   );
