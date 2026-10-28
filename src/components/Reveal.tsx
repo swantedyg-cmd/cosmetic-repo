@@ -26,7 +26,25 @@ export default function Reveal({ children, className, variant = "up", delay = 0 
       { rootMargin: "0px 0px -10% 0px" },
     );
     io.observe(el);
-    return () => io.disconnect();
+    // Safety net for jumps (End key, anchor links, restored scroll): reveal anything
+    // already on or above screen even if the observer never reported it.
+    let raf = 0;
+    const check = () => {
+      if (el.getBoundingClientRect().top >= window.innerHeight) return;
+      el.classList.add("is-in");
+      io.disconnect();
+      window.removeEventListener("scroll", onScroll);
+    };
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(check);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      io.disconnect();
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", onScroll);
+    };
   }, []);
 
   return (
