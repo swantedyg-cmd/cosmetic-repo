@@ -10,7 +10,8 @@ import { useInView } from "@/lib/useInView";
 const TourScene = dynamic(() => import("./three/TourScene"), { ssr: false });
 
 // A pinned 3D stage: scrolling through it turns the bottle and walks through
-// each featured formula, with its lead active's percentage bent by the glass.
+// each featured formula: the cap lifts and its actives rise out as droplets
+// sized by their real percentages, then it closes before the next one arrives.
 export default function FormulaTour() {
   const section = useRef<HTMLElement>(null);
   const progress = useRef(0);
@@ -64,7 +65,7 @@ export default function FormulaTour() {
                 </p>
                 <h2 className="display mt-3 text-[clamp(2.2rem,4.6vw,3.6rem)]">{p.name}</h2>
                 <p className="mt-4 hidden max-w-[30ch] text-smoke sm:block">{p.tagline}</p>
-                {/* Actives sit beside the bottle on desktop; listed here on phones. */}
+                {/* Actives are labelled on the 3D droplets on desktop; listed here on phones. */}
                 <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-sm lg:hidden">
                   {p.actives.map((a) => (
                     <li key={a.name}>
@@ -78,10 +79,6 @@ export default function FormulaTour() {
                 </div>
               </div>
             </Panel>
-            <Annotations
-              visible={stage === i}
-              items={p.actives.map((a) => ({ value: `${a.percent}%`, label: a.name }))}
-            />
           </div>
         ))}
 
@@ -104,34 +101,6 @@ export default function FormulaTour() {
         </ol>
       </div>
     </section>
-  );
-}
-
-// Gallery-label callouts that hang off a hairline to the right of the bottle.
-function Annotations({ visible, items }: { visible: boolean; items: { value: string; label: string }[] }) {
-  return (
-    <ul
-      aria-hidden={!visible}
-      className="pointer-events-none absolute right-10 top-1/2 hidden -translate-y-1/2 flex-col gap-7 lg:flex xl:right-16"
-    >
-      {items.map((item, i) => (
-        <li
-          key={item.label}
-          style={{ transitionDelay: visible ? `${200 + i * 120}ms` : "0ms" }}
-          className={`flex items-center gap-4 transition-all duration-700 ${
-            visible ? "translate-x-0 opacity-100" : "translate-x-6 opacity-0"
-          }`}
-        >
-          <span className="h-px w-14 bg-graphite" />
-          <span>
-            <span className="block text-[32px] font-extralight leading-none tracking-[-0.05em] text-ink tabular-nums">
-              {item.value}
-            </span>
-            <span className="mt-1 block text-xs text-smoke">{item.label}</span>
-          </span>
-        </li>
-      ))}
-    </ul>
   );
 }
 

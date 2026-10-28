@@ -15,6 +15,8 @@ npm run build
 | 3D bottles (procedural, swap for real .glb later) | `src/components/three/Bottle.tsx` |
 | Home hero: scroll-driven glass bottle + word behind it | `src/components/HomeHero.tsx`, `src/components/three/HeroScene.tsx` |
 | Product page 3D viewer | `src/components/three/ProductViewer.tsx`, `src/components/ProductDetail.tsx` |
+| 3D choreography: shared easings, timings, scroll windows | `src/components/three/motion.ts` |
+| "Open the formula": cap lifts, actives rise as droplets sized by % | `src/components/three/Formula.tsx` |
 | Lighting | `src/components/three/Studio.tsx` |
 | Colours and fonts | `src/app/globals.css`, `src/app/layout.tsx` |
 | Bag (saved in the browser) | `src/lib/cart.tsx` |

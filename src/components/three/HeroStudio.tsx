@@ -7,6 +7,7 @@ import { ContactShadows } from "@react-three/drei";
 import * as THREE from "three";
 import Bottle, { baseOffset } from "./Bottle";
 import Studio from "./Studio";
+import { damp, ease, enter, introDelay, speed, timing } from "./motion";
 import { getProduct, type Product } from "@/data/products";
 
 // The hero is staged like an editorial beauty shot: the whole range on plinths
@@ -14,8 +15,6 @@ import { getProduct, type Product } from "@/data/products";
 
 const FLOOR = -1.6;
 
-// Hold the set's entrance until the intro curtain has lifted (first view per tab only).
-const introDelay = () => (document.documentElement.classList.contains("intro-seen") ? 0 : 1.2);
 
 const SET: { slug: string; x: number; z: number; plinth: number; radius: number }[] = [
   { slug: "veil-barrier-cream", x: -1.35, z: 0.35, plinth: 0.45, radius: 0.86 },
@@ -24,9 +23,15 @@ const SET: { slug: string; x: number; z: number; plinth: number; radius: number 
   { slug: "tint-balm", x: 2.75, z: 0.05, plinth: 0.3, radius: 0.46 },
 ];
 
-type Props = { quality: "high" | "low"; reducedMotion: boolean; active: boolean };
+type Props = {
+  quality: "high" | "low";
+  reducedMotion: boolean;
+  active: boolean;
+  /** 0 → 1 as the hero scrolls out of view. */
+  exit: { current: number };
+};
 
-export default function HeroStudio({ quality, reducedMotion, active }: Props) {
+export default function HeroStudio({ quality, reducedMotion, active, exit }: Props) {
   return (
     <Canvas
       frameloop={active ? "always" : "never"}
@@ -37,12 +42,13 @@ export default function HeroStudio({ quality, reducedMotion, active }: Props) {
       <Backdrop reducedMotion={reducedMotion} />
       <Studio />
       <Strobe reducedMotion={reducedMotion} />
-      <Rig reducedMotion={reducedMotion}>
+      <Rig reducedMotion={reducedMotion} exit={exit}>
         {SET.map((item, i) => (
           <Piece
             key={item.slug}
             product={getProduct(item.slug)!}
             index={i}
+            exit={exit}
             {...item}
             quality={quality}
             reducedMotion={reducedMotion}
@@ -62,8 +68,8 @@ export default function HeroStudio({ quality, reducedMotion, active }: Props) {
   );
 }
 
-/** Positions the set for the viewport and drifts the camera with the pointer. */
-function Rig({ children, reducedMotion }: { children: React.ReactNode; reducedMotion: boolean }) {
+/** Positions the set for the viewport, dollies in on load, and rises over the set as you scroll away. */
+function Rig({ children, reducedMotion, exit }: { children: React.ReactNode; reducedMotion: boolean; exit: { current: number } }) {
   const group = useRef<THREE.Group>(null);
   const { viewport } = useThree();
   const wide = viewport.aspect > 1.1;
@@ -77,18 +83,19 @@ function Rig({ children, reducedMotion }: { children: React.ReactNode; reducedMo
   const offsetY = wide ? -viewport.height * 0.1 : viewport.height * 0.06;
   const start = useRef<number | null>(null);
 
-  useFrame((state) => {
+  useFrame((state, dt) => {
     if (start.current === null) start.current = state.clock.elapsedTime + introDelay();
     const t = Math.max(0, state.clock.elapsedTime - start.current);
     // Intro dolly: the camera eases in from further back.
-    const intro = reducedMotion ? 1 : 1 - Math.pow(1 - Math.min(1, t / 2.4), 4);
+    const intro = reducedMotion ? 1 : enter(t, 0, timing.dolly);
+    const out = reducedMotion ? 0 : ease.inOutCubic(exit.current);
     const px = reducedMotion ? 0 : state.pointer.x * 0.45;
     const py = reducedMotion ? 0 : state.pointer.y * 0.2;
     const cam = state.camera;
-    cam.position.x = THREE.MathUtils.lerp(cam.position.x, px, 0.04);
-    cam.position.y = THREE.MathUtils.lerp(cam.position.y, 0.5 + py, 0.04);
-    cam.position.z = 11 - intro * 1.6;
-    cam.lookAt(0, -0.25, 0);
+    cam.position.x = damp(cam.position.x, px, speed.slow, dt);
+    cam.position.y = damp(cam.position.y, 0.5 + py + out * 2.6, speed.base, dt);
+    cam.position.z = 11 - intro * 1.6 + out * 1.2;
+    cam.lookAt(0, -0.25 - out * 0.8, 0);
   });
 
   return (
@@ -107,9 +114,11 @@ function Piece({
   radius,
   quality,
   reducedMotion,
+  exit,
 }: {
   product: Product;
   index: number;
+  exit: { current: number };
   x: number;
   z: number;
   plinth: number;
@@ -123,6 +132,7 @@ function Piece({
   const [hovered, setHovered] = useState(false);
   const start = useRef<number | null>(null);
   const spin = useRef(0);
+  const open = useRef(0);
 
   useFrame((state, dt) => {
     if (!plinthRef.current || !bottle.current) return;
@@ -130,12 +140,13 @@ function Piece({
     const t = Math.max(0, state.clock.elapsedTime - start.current);
 
     // Staggered rise: plinth grows out of the floor, then the bottle settles onto it.
-    const rise = (delay: number) =>
-      reducedMotion ? 1 : 1 - Math.pow(1 - THREE.MathUtils.clamp((t - delay) / 1.3, 0, 1), 4);
-    const p = rise(0.15 + index * 0.14);
-    const b = rise(0.55 + index * 0.14);
+    const rise = (delay: number) => (reducedMotion ? 1 : enter(t, delay + index * timing.stagger));
+    const p = rise(0.15);
+    const b = rise(0.55);
+    // Scrolling away plays it backwards: plinths sink, tallest last.
+    const sink = reducedMotion ? 0 : ease.inOutCubic(Math.min(1, Math.max(0, exit.current * 1.6 - index * 0.12)));
 
-    const h = Math.max(0.001, plinth * p);
+    const h = Math.max(0.001, plinth * p * (1 - sink * 0.85));
     plinthRef.current.scale.y = h;
     plinthRef.current.position.y = FLOOR + h / 2;
 
@@ -148,7 +159,8 @@ function Piece({
     );
     bottle.current.scale.setScalar(Math.max(0.001, b));
 
-    // Idle sway keeps the label mostly facing the camera; hover turns it a full lap.
+    // Hover opens the bottle a little and turns it a full lap; the sway keeps the label to camera.
+    open.current = damp(open.current, hovered ? 0.55 : 0, speed.base, dt);
     if (hovered) spin.current += dt * 3.2;
     else spin.current = THREE.MathUtils.lerp(spin.current, Math.round(spin.current / (Math.PI * 2)) * Math.PI * 2, dt * 2);
     const sway = reducedMotion ? 0 : Math.sin(state.clock.elapsedTime * 0.45 + index * 1.7) * 0.4;
@@ -178,7 +190,7 @@ function Piece({
           router.push(`/shop/${product.slug}`);
         }}
       >
-        <Bottle product={product} glass={quality === "high" ? "native" : "simple"} />
+        <Bottle product={product} open={open} glass={quality === "high" ? "native" : "simple"} />
       </group>
     </group>
   );

@@ -6,6 +6,7 @@ import { MeshTransmissionMaterial } from "@react-three/drei";
 import * as THREE from "three";
 import type { BottleShape, Product } from "@/data/products";
 import { createLabelTexture } from "./label";
+import { damp, speed } from "./motion";
 
 // Procedural packaging: each shape is a lathe profile (radius, height) spun around Y.
 // When the client sends real .glb models, replace the meshes below with <primitive>.
@@ -58,23 +59,36 @@ type BottleProps = {
   color?: string;
   glass?: GlassMode;
   lowQuality?: boolean;
+  /** 0 → 1: how far the closure has lifted off to show what's inside. Read every frame. */
+  open?: { current: number };
 };
 
 const capMaterial = { color: "#0d1717", roughness: 0.5, metalness: 0.05 };
 const metalMaterial = { color: "#d6c3a5", roughness: 0.22, metalness: 1 };
 
-export default function Bottle({ product, color, glass = "native", lowQuality }: BottleProps) {
+export default function Bottle({ product, color, glass = "native", lowQuality, open }: BottleProps) {
   const fillMat = useRef<THREE.MeshPhysicalMaterial>(null);
+  const closure = useRef<THREE.Group>(null);
   const tint = color ?? product.color;
   const target = useMemo(() => new THREE.Color(tint), [tint]);
   const cream = product.shape === "jar";
+  const neck = product.shape === "stick" ? 0 : PROFILES[product.shape].glass.at(-1)![1];
 
   useFrame((_, dt) => {
     const m = fillMat.current;
-    if (!m) return;
-    m.color.lerp(target, Math.min(1, dt * 4));
-    // A little self-light so the liquid glows like it's backlit.
-    m.emissive.copy(m.color).multiplyScalar(cream ? 0.04 : 0.22);
+    const o = open?.current ?? 0;
+    if (m) {
+      m.color.lerp(target, Math.min(1, dt * 4));
+      // A little self-light so the liquid glows like it's backlit, brighter once it's opened.
+      m.emissive.copy(m.color).multiplyScalar((cream ? 0.04 : 0.22) + o * 0.18);
+    }
+    // The closure lifts straight up, then tips back on its rim as if set aside.
+    const c = closure.current;
+    if (c) {
+      c.position.y = damp(c.position.y, neck + o * (cream ? 0.9 : 0.75), speed.quick, dt);
+      c.position.x = damp(c.position.x, o * (cream ? 0.35 : 0.22), speed.quick, dt);
+      c.rotation.z = damp(c.rotation.z, -o * (cream ? 0.5 : 0.38), speed.quick, dt);
+    }
   });
 
   const fill = (
@@ -87,7 +101,7 @@ export default function Bottle({ product, color, glass = "native", lowQuality }:
     />
   );
 
-  if (product.shape === "stick") return <Stick product={product} fill={fill} />;
+  if (product.shape === "stick") return <Stick product={product} fill={fill} open={open} />;
 
   const profile = PROFILES[product.shape];
   return (
@@ -95,9 +109,14 @@ export default function Bottle({ product, color, glass = "native", lowQuality }:
       <Glass points={profile.glass} mode={glass} lowQuality={lowQuality} />
       <LatheMesh points={profile.fill}>{fill}</LatheMesh>
       <Label product={product} {...profile.label} />
-      {product.shape === "dropper" && <DropperCap />}
-      {product.shape === "pump" && <PumpHead />}
-      {product.shape === "jar" && <JarLid />}
+      {/* Closure pivots at the neck so it can lift and tip off. */}
+      <group ref={closure} position-y={neck}>
+        <group position-y={-neck}>
+          {product.shape === "dropper" && <DropperCap />}
+          {product.shape === "pump" && <PumpHead />}
+          {product.shape === "jar" && <JarLid />}
+        </group>
+      </group>
     </group>
   );
 }
@@ -247,8 +266,17 @@ function JarLid() {
 
 const STICK_BULLET: [number, number][] = [[0, 0], [0.24, 0], [0.24, 0.42], [0.2, 0.52], [0.1, 0.58], [0, 0.6]];
 
-function Stick({ product, fill }: { product: Product; fill: React.ReactNode }) {
+function Stick({ product, fill, open }: { product: Product; fill: React.ReactNode; open?: { current: number } }) {
   const bullet = useLathe(STICK_BULLET);
+  const ref = useRef<THREE.Mesh>(null);
+
+  // Opening a balm twists the bullet up out of its case.
+  useFrame((_, dt) => {
+    const o = open?.current ?? 0;
+    if (!ref.current) return;
+    ref.current.position.y = damp(ref.current.position.y, 1.18 + o * 0.28, speed.quick, dt);
+    ref.current.rotation.y = damp(ref.current.rotation.y, o * Math.PI, speed.base, dt);
+  });
   return (
     <group position-y={-0.9}>
       <mesh position-y={0.55}>
@@ -260,11 +288,18 @@ function Stick({ product, fill }: { product: Product; fill: React.ReactNode }) {
         <cylinderGeometry args={[0.28, 0.28, 0.08, 64]} />
         <meshStandardMaterial {...metalMaterial} />
       </mesh>
-      <mesh geometry={bullet} position-y={1.18}>
+      <mesh ref={ref} geometry={bullet} position-y={1.18}>
         {fill}
       </mesh>
     </group>
   );
+}
+
+/** Height of the opening above a bottle's centre: where the formula rises out from. */
+export function mouthY(shape: BottleShape) {
+  if (shape === "stick") return 0.88;
+  const p = PROFILES[shape];
+  return (p.glass.at(-1)![1] - p.height / 2) * p.scale;
 }
 
 /** Distance from a bottle's centre to its base, for placing shadows and plinths. */

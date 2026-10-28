@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { brandStat, products } from "@/data/products";
 import { useDevice } from "@/lib/useDevice";
@@ -14,11 +15,22 @@ const HeroStudio = dynamic(() => import("./three/HeroStudio"), {
 export default function Hero() {
   const { quality, reducedMotion } = useDevice();
   const [ref, inView] = useInView<HTMLElement>();
+  const exit = useRef(0);
+
+  // How far the hero has scrolled out, read by the 3D set every frame (no re-renders).
+  useEffect(() => {
+    const onScroll = () => {
+      exit.current = Math.min(1, Math.max(0, window.scrollY / window.innerHeight));
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
     <section ref={ref} className="relative h-svh min-h-[640px] overflow-hidden bg-[#fbe9dc]">
       <div className="absolute inset-0">
-        <HeroStudio quality={quality} reducedMotion={reducedMotion} active={inView} />
+        <HeroStudio quality={quality} reducedMotion={reducedMotion} active={inView} exit={exit} />
       </div>
 
       {/* Stat annotations, hung off hairlines like gallery labels */}

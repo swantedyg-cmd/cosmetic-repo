@@ -4,7 +4,8 @@ import { useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Text } from "@react-three/drei";
 import * as THREE from "three";
-import Bottle from "./Bottle";
+import Formula from "./Formula";
+import { damp, speed, stageOpen } from "./motion";
 import Studio from "./Studio";
 import type { Product } from "@/data/products";
 
@@ -43,6 +44,7 @@ function Scene({ products, stage, progress, quality, reducedMotion }: Props) {
   const swapping = product.slug !== shown.slug;
 
   const rig = useRef<THREE.Group>(null);
+  const open = useRef(0);
   const bottle = useRef<THREE.Group>(null);
   const { viewport } = useThree();
   const wide = viewport.aspect > 1.1;
@@ -56,22 +58,29 @@ function Scene({ products, stage, progress, quality, reducedMotion }: Props) {
     if (!rig.current || !bottle.current) return;
     const k = Math.min(1, dt * 5);
 
+    // Scroll inside each formula's stretch of the section opens it, then closes it before the swap.
+    const local = progress.current * products.length - stage;
+    open.current = swapping ? 0 : stageOpen(local, stage === products.length - 1);
+
     const s = bottle.current.scale.x;
     if (swapping) {
-      const next = THREE.MathUtils.lerp(s, 0, k * 1.6);
+      const next = damp(s, 0, speed.quick, dt);
       bottle.current.scale.setScalar(next);
       if (next < 0.04) setShown(product);
     } else {
-      bottle.current.scale.setScalar(THREE.MathUtils.lerp(s, size, k));
+      bottle.current.scale.setScalar(damp(s, size, speed.base, dt));
     }
 
-    // Scroll turns the bottle a full lap per formula; the pointer tilts it slightly.
-    const turn = reducedMotion ? 0 : progress.current * products.length * Math.PI * 2;
-    rig.current.rotation.y = turn + Math.sin(state.clock.elapsedTime * 0.3) * 0.15;
+    // The bottle turns a lap on arrival, then holds square to camera while it's open.
+    const arrive = Math.min(1, Math.max(0, local / 0.15));
+    const turn = reducedMotion ? 0 : (stage + arrive) * Math.PI * 2;
+    bottle.current.rotation.y = damp(bottle.current.rotation.y, turn, speed.base, dt);
+    rig.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.3) * 0.08;
     rig.current.rotation.x = THREE.MathUtils.lerp(rig.current.rotation.x, state.pointer.y * -0.12, k);
     rig.current.rotation.z = THREE.MathUtils.lerp(rig.current.rotation.z, state.pointer.x * -0.06, k);
 
-    const x = wide ? viewport.width * 0.08 : 0;
+    // Slide left as it opens so the droplets have room on the right.
+    const x = (wide ? viewport.width * 0.08 : 0) - open.current * size * 0.7;
     rig.current.position.x = THREE.MathUtils.lerp(rig.current.position.x, x, k);
     rig.current.position.y = THREE.MathUtils.lerp(rig.current.position.y, lift, k);
     bottle.current.position.y = reducedMotion ? 0 : Math.sin(state.clock.elapsedTime * 0.8) * 0.05;
@@ -90,7 +99,14 @@ function Scene({ products, stage, progress, quality, reducedMotion }: Props) {
       ))}
       <group ref={rig}>
         <group ref={bottle}>
-          <Bottle product={shown} glass={quality === "high" ? "mtm" : "native"} lowQuality={quality === "low"} />
+          <Formula
+            product={shown}
+            open={open}
+            labels={wide}
+            glass={quality === "high" ? "mtm" : "native"}
+            lowQuality={quality === "low"}
+            reducedMotion={reducedMotion}
+          />
         </group>
       </group>
     </>

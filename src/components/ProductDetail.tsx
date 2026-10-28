@@ -18,6 +18,7 @@ export default function ProductDetail({ product }: { product: Product }) {
   const [variant, setVariant] = useState(product.variants[0]);
   const [added, setAdded] = useState(false);
   const [view, setView] = useState<"3d" | number>("3d");
+  const [opened, setOpened] = useState(false);
   const photos = productPhotos[product.slug];
   const { add } = useCart();
   const { quality, reducedMotion } = useDevice();
@@ -33,8 +34,17 @@ export default function ProductDetail({ product }: { product: Product }) {
               color={variant.color ?? product.color}
               quality={quality}
               reducedMotion={reducedMotion}
+              opened={opened}
             />
             <p className="label pointer-events-none absolute bottom-4 left-5 text-smoke">Drag to turn · scroll to zoom</p>
+            <button
+              type="button"
+              aria-pressed={opened}
+              onClick={() => setOpened((o) => !o)}
+              className="btn btn-white absolute right-4 top-4 !px-5 !py-2.5"
+            >
+              {opened ? "Close the formula" : "Open the formula"}
+            </button>
           </div>
           {photos.map((ph, i) => (
             <Image
