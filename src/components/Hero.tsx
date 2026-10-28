@@ -70,7 +70,7 @@ export default function Hero() {
         </p>
         <div className="reveal pointer-events-auto mt-7 flex flex-wrap items-center gap-5" style={{ animationDelay: "calc(var(--intro) + 1000ms)" }}>
           <Link href="/shop" className="btn btn-white">Shop the formulas</Link>
-          <span className="hidden text-sm text-ink/60 md:inline">Click a bottle to open it</span>
+          <span className="hidden text-sm text-ink/60 md:inline">Drag a bottle to play · click to open it</span>
         </div>
       </div>
     </section>

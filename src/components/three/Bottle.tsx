@@ -61,14 +61,19 @@ type BottleProps = {
   lowQuality?: boolean;
   /** 0 → 1: how far the closure has lifted off to show what's inside. Read every frame. */
   open?: { current: number };
+  /** 1 on a press, decays to 0: squeezes the pump or dropper bulb. Read every frame. */
+  press?: { current: number };
+  /** Rising bubbles inside clear liquids. Off for small or distant bottles. */
+  bubbles?: boolean;
 };
 
 const capMaterial = { color: "#0d1717", roughness: 0.5, metalness: 0.05 };
 const metalMaterial = { color: "#d6c3a5", roughness: 0.22, metalness: 1 };
 
-export default function Bottle({ product, color, glass = "native", lowQuality, open }: BottleProps) {
+export default function Bottle({ product, color, glass = "native", lowQuality, open, press, bubbles }: BottleProps) {
   const fillMat = useRef<THREE.MeshPhysicalMaterial>(null);
   const closure = useRef<THREE.Group>(null);
+  const squeeze = useRef<THREE.Group>(null);
   const tint = color ?? product.color;
   const target = useMemo(() => new THREE.Color(tint), [tint]);
   const cream = product.shape === "jar";
@@ -89,6 +94,8 @@ export default function Bottle({ product, color, glass = "native", lowQuality, o
       c.position.x = damp(c.position.x, o * (cream ? 0.35 : 0.22), speed.quick, dt);
       c.rotation.z = damp(c.rotation.z, -o * (cream ? 0.5 : 0.38), speed.quick, dt);
     }
+    // A press squashes the closure down towards the neck, then it springs back.
+    if (squeeze.current) squeeze.current.scale.y = 1 - (press?.current ?? 0) * 0.22;
   });
 
   const fill = (
@@ -107,17 +114,140 @@ export default function Bottle({ product, color, glass = "native", lowQuality, o
   return (
     <group position-y={(-profile.height / 2) * profile.scale} scale={profile.scale}>
       <Glass points={profile.glass} mode={glass} lowQuality={lowQuality} />
-      <LatheMesh points={profile.fill}>{fill}</LatheMesh>
+      <Slosh points={profile.fill}>
+        <LatheMesh points={profile.fill}>{fill}</LatheMesh>
+        {bubbles && !cream && <Bubbles points={profile.fill} color={tint} />}
+      </Slosh>
       <Label product={product} {...profile.label} />
       {/* Closure pivots at the neck so it can lift and tip off. */}
       <group ref={closure} position-y={neck}>
+        <group ref={squeeze}>
         <group position-y={-neck}>
           {product.shape === "dropper" && <DropperCap />}
           {product.shape === "pump" && <PumpHead />}
           {product.shape === "jar" && <JarLid />}
         </group>
+        </group>
       </group>
     </group>
+  );
+}
+
+/**
+ * Liquid inertia: when the bottle is moved or tipped, the fill lags behind and
+ * rocks back to level on a soft spring, the way a half-full serum does in the hand.
+ */
+function Slosh({ points, children }: { points: [number, number][]; children: React.ReactNode }) {
+  const group = useRef<THREE.Group>(null);
+  const top = points.reduce((m, [, y]) => Math.max(m, y), 0);
+  const bottom = points.reduce((m, [, y]) => Math.min(m, y), top);
+  const pivot = (top + bottom) / 2;
+  const state = useRef({ init: false, px: 0, py: 0, vx: 0, vy: 0, ax: 0, az: 0, wx: 0, wz: 0 });
+  const world = useMemo(() => new THREE.Vector3(), []);
+
+  useFrame((_, delta) => {
+    const g = group.current;
+    if (!g) return;
+    const dt = Math.min(delta, 1 / 30);
+    const st = state.current;
+    g.getWorldPosition(world);
+    if (!st.init) {
+      st.px = world.x;
+      st.py = world.y;
+      st.init = true;
+    }
+    const vx = (world.x - st.px) / dt;
+    const vy = (world.y - st.py) / dt;
+    st.px = world.x;
+    st.py = world.y;
+    // Acceleration kicks the surface the other way; a damped spring brings it home.
+    const kick = THREE.MathUtils.clamp((vx - st.vx) * 0.6, -6, 6);
+    const lift = THREE.MathUtils.clamp((vy - st.vy) * 0.25, -6, 6);
+    st.vx = vx;
+    st.vy = vy;
+    st.wz += (kick - st.az * 60 - st.wz * 5) * dt;
+    st.wx += (lift * 0.4 - st.ax * 60 - st.wx * 5) * dt;
+    st.az = THREE.MathUtils.clamp(st.az + st.wz * dt, -0.14, 0.14);
+    st.ax = THREE.MathUtils.clamp(st.ax + st.wx * dt, -0.1, 0.1);
+    g.rotation.set(st.ax, 0, st.az);
+  });
+
+  return (
+    <group ref={group} position-y={pivot}>
+      <group position-y={-pivot}>{children}</group>
+    </group>
+  );
+}
+
+const BUBBLES = 14;
+
+/** A few slow bubbles drifting up through the liquid, so it reads as fluid rather than solid. */
+function Bubbles({ points, color }: { points: [number, number][]; color: string }) {
+  const mesh = useRef<THREE.InstancedMesh>(null);
+  const radius = points.reduce((m, [x]) => Math.max(m, x), 0) * 0.75;
+  const top = points.reduce((m, [, y]) => Math.max(m, y), 0) - 0.04;
+  const bottom = points.reduce((m, [, y]) => Math.min(m, y), top) + 0.06;
+  const seeds = useMemo(
+    () =>
+      Array.from({ length: BUBBLES }, (_, i) => {
+        // Deterministic scatter so server and client agree and nothing reshuffles on re-render.
+        const r = (n: number) => (Math.sin(i * 127.1 + n * 311.7) * 43758.5453) % 1;
+        const a = Math.abs(r(1)) * Math.PI * 2;
+        const d = Math.sqrt(Math.abs(r(2))) * radius;
+        return { x: Math.cos(a) * d, z: Math.sin(a) * d, phase: Math.abs(r(3)), speed: 0.05 + Math.abs(r(4)) * 0.08, size: 0.012 + Math.abs(r(5)) * 0.022 };
+      }),
+    [radius],
+  );
+  const dummy = useMemo(() => new THREE.Object3D(), []);
+  const tint = useMemo(() => new THREE.Color(color).lerp(new THREE.Color("#ffffff"), 0.7), [color]);
+
+  useFrame((state) => {
+    const m = mesh.current;
+    if (!m) return;
+    const t = state.clock.elapsedTime;
+    seeds.forEach((b, i) => {
+      const k = (b.phase + t * b.speed) % 1;
+      dummy.position.set(b.x + Math.sin(t * 2 + i) * 0.015, bottom + k * (top - bottom), b.z);
+      // Bubbles swell slightly as they rise and vanish at the surface.
+      dummy.scale.setScalar(b.size * (0.6 + k * 0.6) * (k > 0.94 ? (1 - k) / 0.06 : 1));
+      dummy.updateMatrix();
+      m.setMatrixAt(i, dummy.matrix);
+    });
+    m.instanceMatrix.needsUpdate = true;
+  });
+
+  return (
+    <instancedMesh ref={mesh} args={[undefined, undefined, BUBBLES]} frustumCulled={false}>
+      <sphereGeometry args={[1, 10, 8]} />
+      <meshStandardMaterial color={tint} emissive={tint} emissiveIntensity={0.5} roughness={0.1} transparent opacity={0.75} />
+    </instancedMesh>
+  );
+}
+
+/** Metal collar with fine vertical ridges, like a crimped dropper or pump ring. */
+function knurled(radius: number, height: number, ridges = 64) {
+  const geo = new THREE.CylinderGeometry(radius, radius, height, ridges * 4, 1);
+  const pos = geo.attributes.position;
+  const v = new THREE.Vector3();
+  for (let i = 0; i < pos.count; i++) {
+    v.fromBufferAttribute(pos, i);
+    const r = Math.hypot(v.x, v.z);
+    if (r < radius * 0.5) continue; // cap centres
+    const a = Math.atan2(v.z, v.x);
+    const k = 1 + 0.035 * Math.max(0, Math.cos(a * ridges));
+    pos.setXYZ(i, (v.x / r) * radius * k, v.y, (v.z / r) * radius * k);
+  }
+  geo.computeVertexNormals();
+  return geo;
+}
+
+function Knurled({ radius, height, y }: { radius: number; height: number; y: number }) {
+  const geo = useMemo(() => knurled(radius, height), [radius, height]);
+  useEffect(() => () => geo.dispose(), [geo]);
+  return (
+    <mesh geometry={geo} position-y={y}>
+      <meshStandardMaterial {...metalMaterial} />
+    </mesh>
   );
 }
 
@@ -224,10 +354,7 @@ function Label({
 function DropperCap() {
   return (
     <group position-y={1.78}>
-      <mesh position-y={0.11}>
-        <cylinderGeometry args={[0.26, 0.26, 0.22, 64]} />
-        <meshStandardMaterial {...metalMaterial} />
-      </mesh>
+      <Knurled radius={0.26} height={0.22} y={0.11} />
       <mesh position-y={0.37}>
         <capsuleGeometry args={[0.15, 0.22, 12, 32]} />
         <meshStandardMaterial {...capMaterial} />
@@ -239,10 +366,7 @@ function DropperCap() {
 function PumpHead() {
   return (
     <group position-y={2.0}>
-      <mesh position-y={0.08}>
-        <cylinderGeometry args={[0.22, 0.22, 0.16, 64]} />
-        <meshStandardMaterial {...metalMaterial} />
-      </mesh>
+      <Knurled radius={0.22} height={0.16} y={0.08} />
       <mesh position-y={0.2}>
         <cylinderGeometry args={[0.06, 0.06, 0.16, 24]} />
         <meshStandardMaterial {...capMaterial} />

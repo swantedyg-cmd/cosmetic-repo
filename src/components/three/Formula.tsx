@@ -18,6 +18,8 @@ type Props = {
   lowQuality?: boolean;
   /** 0 → 1, read every frame. */
   open: { current: number };
+  press?: { current: number };
+  bubbles?: boolean;
   /** Show the percentage labels beside the droplets. */
   labels?: boolean;
   /** Which side the droplets settle on. */

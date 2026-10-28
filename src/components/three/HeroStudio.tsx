@@ -2,8 +2,8 @@
 
 import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { ContactShadows } from "@react-three/drei";
+import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
+import { ContactShadows, Sparkles } from "@react-three/drei";
 import * as THREE from "three";
 import Bottle, { baseOffset } from "./Bottle";
 import Studio from "./Studio";
@@ -54,6 +54,16 @@ export default function HeroStudio({ quality, reducedMotion, active, exit }: Pro
             reducedMotion={reducedMotion}
           />
         ))}
+        {/* Dust caught in the strobe: tiny warm specks drifting through the light. */}
+        <Sparkles
+          count={quality === "high" ? 60 : 24}
+          position={[0.7, 0.4, -0.6]}
+          scale={[7, 4, 3]}
+          size={2.2}
+          speed={reducedMotion ? 0 : 0.25}
+          opacity={0.55}
+          color="#ffb48f"
+        />
         <ContactShadows
           position={[0.7, FLOOR + 0.001, 0]}
           opacity={0.45}
@@ -133,6 +143,29 @@ function Piece({
   const start = useRef<number | null>(null);
   const spin = useRef(0);
   const open = useRef(0);
+  const toss = useRef<THREE.Group>(null);
+  // Drag-and-toss: the bottle follows the pointer, then springs back onto its plinth.
+  const drag = useRef({
+    active: false,
+    moved: 0,
+    x: 0,
+    y: 0,
+    vx: 0,
+    vy: 0,
+    targetX: 0,
+    targetY: 0,
+    grabX: 0,
+    grabY: 0,
+    plane: new THREE.Plane(new THREE.Vector3(0, 0, 1), 0),
+    hit: new THREE.Vector3(),
+  });
+
+  const pointerToLocal = (e: ThreeEvent<PointerEvent>) => {
+    const d = drag.current;
+    const parent = toss.current?.parent;
+    if (!parent || !e.ray.intersectPlane(d.plane, d.hit)) return null;
+    return parent.worldToLocal(d.hit);
+  };
 
   useFrame((state, dt) => {
     if (!plinthRef.current || !bottle.current) return;
@@ -165,6 +198,28 @@ function Piece({
     else spin.current = THREE.MathUtils.lerp(spin.current, Math.round(spin.current / (Math.PI * 2)) * Math.PI * 2, dt * 2);
     const sway = reducedMotion ? 0 : Math.sin(state.clock.elapsedTime * 0.45 + index * 1.7) * 0.4;
     bottle.current.rotation.y = sway + spin.current;
+
+    // Toss physics: tight follow while held; a bouncy spring home once let go.
+    const d = drag.current;
+    const g = toss.current;
+    if (!g) return;
+    const step = Math.min(dt, 1 / 30);
+    if (d.active) {
+      const nx = damp(d.x, d.targetX, 18, step);
+      const ny = damp(d.y, d.targetY, 18, step);
+      d.vx = (nx - d.x) / step;
+      d.vy = (ny - d.y) / step;
+      d.x = nx;
+      d.y = ny;
+    } else {
+      d.vx += (-55 * d.x - 6 * d.vx) * step;
+      d.vy += (-55 * d.y - 6 * d.vy) * step;
+      d.x += d.vx * step;
+      d.y += d.vy * step;
+    }
+    g.position.set(d.x, d.y, 0);
+    // Lean into the motion like something with weight.
+    g.rotation.z = damp(g.rotation.z, THREE.MathUtils.clamp(-d.vx * 0.06, -0.5, 0.5), speed.quick, step);
   });
 
   return (
@@ -174,23 +229,60 @@ function Piece({
         <meshStandardMaterial color="#fbeee4" roughness={0.9} emissive="#f6d9c6" emissiveIntensity={0.25} />
       </mesh>
       <group
-        ref={bottle}
-        position-y={FLOOR}
+        ref={toss}
         onPointerOver={(e) => {
           e.stopPropagation();
           setHovered(true);
-          document.body.style.cursor = "pointer";
+          document.body.style.cursor = "grab";
         }}
         onPointerOut={() => {
           setHovered(false);
-          document.body.style.cursor = "";
+          if (!drag.current.active) document.body.style.cursor = "";
         }}
-        onClick={() => {
-          document.body.style.cursor = "";
-          router.push(`/shop/${product.slug}`);
+        onPointerDown={(e) => {
+          e.stopPropagation();
+          (e.target as Element).setPointerCapture(e.pointerId);
+          const d = drag.current;
+          const world = new THREE.Vector3();
+          toss.current!.getWorldPosition(world);
+          d.plane.constant = -world.z;
+          const local = pointerToLocal(e);
+          if (!local) return;
+          d.active = true;
+          d.moved = 0;
+          d.grabX = local.x - d.x;
+          d.grabY = local.y - d.y;
+          d.targetX = d.x;
+          d.targetY = d.y;
+          document.body.style.cursor = "grabbing";
+        }}
+        onPointerMove={(e) => {
+          const d = drag.current;
+          if (!d.active) return;
+          const local = pointerToLocal(e);
+          if (!local) return;
+          const nx = THREE.MathUtils.clamp(local.x - d.grabX, -2.5, 2.5);
+          const ny = THREE.MathUtils.clamp(local.y - d.grabY, -0.2, 2.5);
+          d.moved += Math.abs(nx - d.targetX) + Math.abs(ny - d.targetY);
+          d.targetX = nx;
+          d.targetY = ny;
+        }}
+        onPointerUp={(e) => {
+          const d = drag.current;
+          (e.target as Element).releasePointerCapture?.(e.pointerId);
+          if (!d.active) return;
+          d.active = false;
+          document.body.style.cursor = hovered ? "grab" : "";
+          // A press without a drag opens the product.
+          if (d.moved < 0.08) {
+            document.body.style.cursor = "";
+            router.push(`/shop/${product.slug}`);
+          }
         }}
       >
-        <Bottle product={product} open={open} glass={quality === "high" ? "native" : "simple"} />
+        <group ref={bottle} position-y={FLOOR}>
+          <Bottle product={product} open={open} bubbles={quality === "high"} glass={quality === "high" ? "native" : "simple"} />
+        </group>
       </group>
     </group>
   );

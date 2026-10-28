@@ -103,6 +103,7 @@ function Scene({ products, stage, progress, quality, reducedMotion }: Props) {
             product={shown}
             open={open}
             labels={wide}
+            bubbles={quality === "high"}
             glass={quality === "high" ? "mtm" : "native"}
             lowQuality={quality === "low"}
             reducedMotion={reducedMotion}
