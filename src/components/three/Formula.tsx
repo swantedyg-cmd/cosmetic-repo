@@ -57,7 +57,7 @@ function Droplets({
     () =>
       product.actives.map((a, i) => {
         // Radius from volume, so a 40% drop holds eight times a 5% one, not eight times the width.
-        const radius = Math.max(0.09, 0.42 * Math.cbrt(a.percent / max));
+        const radius = Math.max(0.09, 0.36 * Math.cbrt(a.percent / max));
         // Settle in a loose column beside the bottle, biggest at the top.
         const y = 0.85 - i * (1.7 / Math.max(1, count - 1));
         const x = side * (1.35 + radius * 0.6 + (i % 2) * 0.18);

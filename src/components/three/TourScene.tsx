@@ -93,6 +93,7 @@ function Scene({ products, stage, progress, quality, reducedMotion }: Props) {
           key={p.slug}
           text={`${p.actives[0].percent}%`}
           active={i === stage}
+          open={open}
           x={wide ? viewport.width * 0.08 : 0}
           lift={lift}
         />
@@ -115,7 +116,20 @@ function Scene({ products, stage, progress, quality, reducedMotion }: Props) {
 }
 
 // The lead active's percentage, set huge and thin behind the glass so the bottle bends it.
-function Figure({ text, active, x, lift }: { text: string; active: boolean; x: number; lift: number }) {
+// It steps back while the formula is open so the droplets carry the numbers.
+function Figure({
+  text,
+  active,
+  x,
+  lift,
+  open,
+}: {
+  text: string;
+  active: boolean;
+  x: number;
+  lift: number;
+  open: { current: number };
+}) {
   const ref = useRef<THREE.Mesh & { fillOpacity: number }>(null);
   const { viewport } = useThree();
   const size = Math.min(viewport.height * 0.62, (viewport.width * 0.9) / (text.length * 0.6));
@@ -123,7 +137,7 @@ function Figure({ text, active, x, lift }: { text: string; active: boolean; x: n
   useFrame((_, dt) => {
     if (!ref.current) return;
     const k = Math.min(1, dt * 4);
-    ref.current.fillOpacity = THREE.MathUtils.lerp(ref.current.fillOpacity, active ? 1 : 0, k);
+    ref.current.fillOpacity = THREE.MathUtils.lerp(ref.current.fillOpacity, active ? 1 - open.current * 0.9 : 0, k);
     ref.current.position.y = THREE.MathUtils.lerp(ref.current.position.y, (active ? 0 : -0.5) + lift * 1.3, k);
     ref.current.position.x = x * 1.3;
     ref.current.visible = ref.current.fillOpacity > 0.01;

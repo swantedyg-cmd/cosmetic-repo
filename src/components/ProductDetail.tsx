@@ -36,7 +36,7 @@ export default function ProductDetail({ product }: { product: Product }) {
               reducedMotion={reducedMotion}
               opened={opened}
             />
-            <p className="label pointer-events-none absolute bottom-4 left-5 text-smoke">Drag to turn · click the bottle to pump</p>
+            <p className="label pointer-events-none absolute bottom-4 left-5 text-smoke">Drag to turn{product.shape === "pump" || product.shape === "dropper" ? " · click the bottle for a drop" : ""}</p>
             <button
               type="button"
               aria-pressed={opened}
