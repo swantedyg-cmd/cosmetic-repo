@@ -22,6 +22,7 @@ export default function Refill() {
         <Reveal className="relative mx-auto aspect-square w-full max-w-[380px]" >
           <div className="refill-scene" aria-hidden>
             <span className="refill-pod" />
+            <span className="refill-lid" />
             <span className="refill-jar">
               <span className="refill-level" />
             </span>
