@@ -439,3 +439,37 @@ html.lenis body {
   70%, 90% { height: 78%; }
   100% { height: 20%; }
 }
+
+/* Mobile menu: a white sheet that unrolls under the header bar. */
+.mobile-menu {
+  position: absolute;
+  inset-inline: 0;
+  top: 100%;
+  height: calc(100dvh - 100%);
+  overflow-y: auto;
+  background: var(--color-canvas, #fff);
+  clip-path: inset(0 0 100% 0);
+  visibility: hidden;
+  transition: clip-path 0.55s cubic-bezier(0.7, 0, 0.2, 1), visibility 0s linear 0.55s;
+}
+.mobile-menu.is-open {
+  clip-path: inset(0 0 0 0);
+  visibility: visible;
+  transition: clip-path 0.55s cubic-bezier(0.7, 0, 0.2, 1), visibility 0s;
+}
+.mobile-menu-link {
+  display: block;
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.mobile-menu.is-open .mobile-menu-link {
+  opacity: 1;
+  transform: none;
+  transition-delay: calc(0.15s + var(--i) * 0.05s);
+}
+@media (prefers-reduced-motion: reduce) {
+  .mobile-menu, .mobile-menu.is-open, .mobile-menu-link, .mobile-menu.is-open .mobile-menu-link {
+    transition: none;
+  }
+}

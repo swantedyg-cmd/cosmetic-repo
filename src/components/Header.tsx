@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useCart } from "@/lib/cart";
 import { BagIcon, SearchIcon, UserIcon } from "./icons";
 
@@ -16,6 +17,15 @@ const NAV = [
 export default function Header() {
   const { count } = useCart();
   const path = usePathname();
+  const [open, setOpen] = useState(false);
+
+  // Escape closes the menu.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
 
   return (
     <header className="fixed inset-x-0 top-0 z-50">
@@ -55,9 +65,44 @@ export default function Header() {
                 </span>
               )}
             </Link>
-            <Link href="/shop" className="text-sm lg:hidden">Shop</Link>
+            <button
+              type="button"
+              onClick={() => setOpen((o) => !o)}
+              aria-expanded={open}
+              aria-controls="mobile-menu"
+              className="text-sm lg:hidden"
+            >
+              {open ? "Close" : "Menu"}
+            </button>
           </div>
         </div>
+      </div>
+
+      {/* Phone and tablet menu: drops down under the bar, links stagger in. */}
+      <div
+        id="mobile-menu"
+        className={`mobile-menu lg:hidden ${open ? "is-open" : ""}`}
+        aria-hidden={!open}
+        inert={!open}
+      >
+        <nav className="mx-auto flex max-w-[1280px] flex-col px-5 pb-10 pt-4 md:px-10">
+          {NAV.map((n, i) => (
+            <Link
+              key={n.href}
+              href={n.href}
+              onClick={() => setOpen(false)}
+              style={{ "--i": i } as React.CSSProperties}
+              className={`mobile-menu-link display border-b border-mist py-4 text-[clamp(2rem,8vw,3rem)] ${
+                path.startsWith(n.href) ? "text-ember" : "text-ink"
+              }`}
+            >
+              {n.label}
+            </Link>
+          ))}
+          <p className="mobile-menu-link mt-8 text-sm text-smoke" style={{ "--i": NAV.length } as React.CSSProperties}>
+            Free shipping over €60 · A sample with every order
+          </p>
+        </nav>
       </div>
     </header>
   );
