@@ -16,19 +16,20 @@ const QUESTIONS: Question[] = [
     id: "feel",
     ask: "How does your skin feel by midday?",
     options: [
-      { id: "dry", label: "Tight or flaky", hint: "Dry", score: { "ember-facial-oil": 3, "veil-barrier-cream": 2 } },
-      { id: "oily", label: "Shiny all over", hint: "Oily", score: { "dew-serum": 3 } },
-      { id: "combo", label: "Shiny in the middle, tight on the cheeks", hint: "Combination", score: { "dew-serum": 2, "veil-barrier-cream": 1 } },
-      { id: "sensitive", label: "Fine, but it reacts easily", hint: "Sensitive", score: { "veil-barrier-cream": 3 } },
+      { id: "dry", label: "Tight or flaky", hint: "Dry", score: { "ember-facial-oil": 3, "veil-barrier-cream": 2, "halo-gel-cleanser": 1 } },
+      { id: "oily", label: "Shiny all over", hint: "Oily", score: { "dew-serum": 3, "green-clay-mask": 2, "lucent-tonic": 1 } },
+      { id: "combo", label: "Shiny in the middle, tight on the cheeks", hint: "Combination", score: { "dew-serum": 2, "lucent-tonic": 2, "veil-barrier-cream": 1 } },
+      { id: "sensitive", label: "Fine, but it reacts easily", hint: "Sensitive", score: { "veil-barrier-cream": 3, "halo-gel-cleanser": 2 } },
     ],
   },
   {
     id: "goal",
     ask: "What would you change first?",
     options: [
-      { id: "glow", label: "Looks dull", hint: "Glow", score: { "ember-facial-oil": 3, "dew-serum": 1 } },
-      { id: "pores", label: "Visible pores and shine", hint: "Refine", score: { "dew-serum": 3 } },
-      { id: "calm", label: "Redness and tightness", hint: "Calm", score: { "veil-barrier-cream": 3 } },
+      { id: "glow", label: "Looks dull", hint: "Glow", score: { "lumen-c-serum": 3, "lucent-tonic": 2, "ember-facial-oil": 1 } },
+      { id: "pores", label: "Visible pores and shine", hint: "Refine", score: { "dew-serum": 3, "green-clay-mask": 2, "lucent-tonic": 1 } },
+      { id: "calm", label: "Redness and tightness", hint: "Calm", score: { "veil-barrier-cream": 3, "halo-gel-cleanser": 1 } },
+      { id: "lines", label: "Fine lines and tired eyes", hint: "Renew", score: { "nocturne-retinal-serum": 3, "cloud-eye-cream": 2 } },
       { id: "colour", label: "I'd like a bit of colour", hint: "Colour", score: { "tint-balm": 5 } },
     ],
   },
@@ -43,12 +44,24 @@ const QUESTIONS: Question[] = [
   },
 ];
 
-// Thinnest first, richest last; colour goes on top.
-const ORDER = ["dew-serum", "ember-facial-oil", "veil-barrier-cream", "tint-balm"];
+// Cleanse first, then thinnest to richest; colour goes on top.
+const ORDER = [
+  "halo-gel-cleanser",
+  "green-clay-mask",
+  "lucent-tonic",
+  "lumen-c-serum",
+  "dew-serum",
+  "nocturne-retinal-serum",
+  "ember-facial-oil",
+  "cloud-eye-cream",
+  "veil-barrier-cream",
+  "tint-balm",
+];
 
 function buildRoutine(answers: Record<string, string>): Product[] {
   const scores: Record<string, number> = Object.fromEntries(ORDER.map((s) => [s, 0]));
-  // Every routine ends in moisturiser, so it always gets a head start.
+  // Every routine starts with cleanser and ends in moisturiser, so both get a head start.
+  scores["halo-gel-cleanser"] += 2;
   scores["veil-barrier-cream"] += 2;
   for (const q of QUESTIONS) {
     const opt = q.options.find((o) => o.id === answers[q.id]);

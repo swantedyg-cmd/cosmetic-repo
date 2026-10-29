@@ -11,7 +11,7 @@ import type { Product } from "@/data/products";
 // A jeweller's turntable in a dark room: the range stands on lacquered plinths
 // around a black disc with gold rims, over a smoked mirror floor.
 
-const RADIUS = 2;
+const RADIUS = 2.4;
 const PLINTH = 0.34;
 const INK = "#0d1717";
 const GOLD = "#d6b47c";
@@ -71,7 +71,7 @@ function Rig({ children, reducedMotion }: { children: React.ReactNode; reducedMo
   const { viewport } = useThree();
   const wide = viewport.aspect > 1.1;
   // Phones crop the side plinths and keep the front bottle large.
-  const scale = wide ? Math.min(0.6, viewport.width / 11, viewport.height / 6.6) : Math.min(0.5, viewport.width / 3.8);
+  const scale = wide ? Math.min(0.55, viewport.width / 12.5, viewport.height / 6.8) : Math.min(0.5, viewport.width / 3.8);
 
   useFrame((state, dt) => {
     const px = reducedMotion ? 0 : state.pointer.x * 0.5;
@@ -106,11 +106,11 @@ function Turntable({ products, turn, drag, quality, reducedMotion, onPick }: Omi
     <group ref={table}>
       {/* The platter: black lacquer with a gold rim and one inlaid ring. */}
       <mesh position-y={-0.07}>
-        <cylinderGeometry args={[2.95, 2.95, 0.14, 96]} />
+        <cylinderGeometry args={[3.3, 3.3, 0.14, 96]} />
         <meshPhysicalMaterial color="#121c1c" roughness={0.22} metalness={0.3} clearcoat={1} clearcoatRoughness={0.1} />
       </mesh>
-      <GoldRing radius={2.95} y={0} tube={0.018} />
-      <GoldRing radius={1.15} y={0.001} tube={0.006} />
+      <GoldRing radius={3.3} y={0} tube={0.018} />
+      <GoldRing radius={1.45} y={0.001} tube={0.006} />
 
       {products.map((p, i) => (
         <Station

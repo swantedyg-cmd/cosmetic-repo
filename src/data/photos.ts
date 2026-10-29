@@ -26,6 +26,35 @@ export const productPhotos: Record<string, Photo[]> = {
     { src: u("1631214499500-2e34edcaccfe"), alt: "Swatches of balm from nude to red on pink" },
     { src: u("1773372238338-f26460145162"), alt: "Three pink balms standing among stones" },
   ],
+  "halo-gel-cleanser": [
+    { src: u("1623143445418-40c192fa3d11"), alt: "Frosted pump bottle on a peach backdrop" },
+    { src: u("1748543668676-ea8241cb3886"), alt: "Clear gel pooled in glass dishes beside a leaf" },
+    { src: u("1558470570-c9a5a5ade867"), alt: "Bubbles suspended in pink gel" },
+  ],
+  "lucent-tonic": [
+    { src: u("1597317628840-d3472f7aa7fc"), alt: "Pale blue flat bottle on a yellow backdrop" },
+    { src: u("1783058890712-c592fa619bc4"), alt: "Beads of liquid on a red surface" },
+    { src: u("1676809180101-1f215d615829"), alt: "Clear dropper bottle among shells on blue" },
+  ],
+  "lumen-c-serum": [
+    { src: u("1690368892771-566e77c3b352"), alt: "Amber serum bottle lying on grey" },
+    { src: u("1748543668699-a8a9398e9161"), alt: "Golden serum in round glass dishes" },
+    { src: u("1605040056130-38d9faad3534"), alt: "A drop of yellow serum falling from a pipette" },
+  ],
+  "nocturne-retinal-serum": [
+    { src: u("1575249142951-35b95b9bb5b7"), alt: "Black dropper bottle with a gold collar" },
+    { src: u("1679394270822-fb37412bb6ee"), alt: "Pipette lifted out of a dark glass bottle" },
+    { src: u("1560521166-117ca72366bd"), alt: "A single drop falling from a pipette in low light" },
+  ],
+  "cloud-eye-cream": [
+    { src: u("1671575192248-5d8e42f18a9c"), alt: "Open jar of white cream on grey" },
+    { src: u("1608068811588-3a67006b7489"), alt: "A swipe of white cream on white" },
+    { src: u("1763503834047-ac85c4105c0b"), alt: "Open cream jar on a stone" },
+  ],
+  "green-clay-mask": [
+    { src: u("1626783416763-67a92e5e7266"), alt: "Bowl of green clay with a brush on pale blue" },
+    { src: u("1748543668643-1ada33167539"), alt: "Pale green and clear gels on a soft background" },
+  ],
 };
 
 export const editorial = {

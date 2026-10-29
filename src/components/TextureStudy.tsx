@@ -12,7 +12,12 @@ const FEEL: Record<string, { word: string; note: string }> = {
   "dew-serum": { word: "Water-light", note: "Clear gel that breaks into water on contact. Nothing left to rub in." },
   "veil-barrier-cream": { word: "Cushion", note: "Dense in the jar, soft on skin. Melts at body heat into a flexible veil." },
   "tint-balm": { word: "Melt", note: "Glides on like balm, sets to a sheer wash you can build in two taps." },
+  "halo-gel-cleanser": { word: "Slip", note: "A clear gel that turns to a soft milk with water and rinses without a film." },
+  "green-clay-mask": { word: "Mousse", note: "Whipped, not muddy. Dries to a velvet matte in ten minutes without cracking." },
 };
+
+// The study shows the products with a texture note, not the whole range.
+const textured = products.filter((p) => FEEL[p.slug]);
 
 // A sticky frame of texture close-ups that changes as each note scrolls past —
 // the closest a screen gets to swatching on the back of your hand.
@@ -38,7 +43,7 @@ export default function TextureStudy() {
       <div className="grid gap-10 md:grid-cols-2 md:gap-16">
         <div className="md:sticky md:top-24 md:h-[calc(100svh-8rem)]">
           <div className="relative hidden h-full overflow-hidden rounded-[15px] bg-mist md:block">
-            {products.map((p, i) => (
+            {textured.map((p, i) => (
               <Image
                 key={p.slug}
                 src={productPhotos[p.slug][1].src}
@@ -51,7 +56,7 @@ export default function TextureStudy() {
               />
             ))}
             <span className="absolute bottom-5 left-5 rounded-full bg-canvas/90 px-4 py-2 text-sm text-ink backdrop-blur-sm">
-              {products[active].name}
+              {textured[active].name}
             </span>
           </div>
         </div>
@@ -60,7 +65,7 @@ export default function TextureStudy() {
           <p className="text-sm text-smoke">Texture</p>
           <h2 className="display mt-4 max-w-[12ch] text-[clamp(2.4rem,5vw,4rem)]">How each one feels on skin</h2>
           <ol className="mt-10 md:mt-[20svh]">
-            {products.map((p, i) => (
+            {textured.map((p, i) => (
               <li
                 key={p.slug}
                 ref={(el) => {

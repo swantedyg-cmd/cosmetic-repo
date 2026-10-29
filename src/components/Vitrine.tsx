@@ -4,12 +4,16 @@ import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { formatPrice, products } from "@/data/products";
+import { formatPrice, getProduct } from "@/data/products";
 import { useDevice } from "@/lib/useDevice";
 import { useInView } from "@/lib/useInView";
 
 const VitrineScene = dynamic(() => import("./three/VitrineScene"), { ssr: false });
 
+// Six on the table: a full set of ten would crowd the plinths.
+const products = ["lumen-c-serum", "dew-serum", "veil-barrier-cream", "nocturne-retinal-serum", "ember-facial-oil", "tint-balm"].map(
+  (s) => getProduct(s)!,
+);
 const N = products.length;
 const STEP = (Math.PI * 2) / N;
 /** Seconds between turns when nobody is touching the table. */
