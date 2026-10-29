@@ -13,7 +13,7 @@
   --canvas: #ffffff;
   --mist: #eeeeee; /* soft dividers */
   --smoke: #818181; /* captions, metadata */
-  --gold: #d6b47c; /* the vitrine only: rims, hairlines on ink */
+  --gold: #d6b47c; /* the vitrine and coffret only: rims, foil, hairlines on ink */
 }
 
 @theme inline {
@@ -573,4 +573,45 @@ html.lenis body {
 }
 @media (prefers-reduced-motion: reduce) {
   .shop-item, .quick-add-check { animation: none; }
+}
+
+/* ---------- Coffret ---------- */
+/* Ink stage with a warm pool of light where the box sits. */
+.coffret {
+  background:
+    radial-gradient(60% 55% at 68% 62%, rgb(214 180 124 / 0.16), transparent 70%),
+    radial-gradient(90% 70% at 50% 110%, rgb(241 87 48 / 0.1), transparent 70%),
+    var(--ink);
+}
+@media (max-width: 767px) {
+  .coffret {
+    background:
+      radial-gradient(90% 45% at 50% 38%, rgb(214 180 124 / 0.16), transparent 70%),
+      var(--ink);
+  }
+}
+
+/* Gold foil type: a metallic gradient that drifts slowly, like light moving across a stamp. */
+.foil {
+  background: linear-gradient(100deg, #9c7a45 0%, #f3e3bf 20%, #d6b47c 38%, #7f6034 52%, #f6e7c8 70%, #c9a46a 100%);
+  background-size: 260% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+  animation: foil 7s ease-in-out infinite alternate;
+  padding-bottom: 0.06em;
+}
+@keyframes foil {
+  from { background-position: 0% 50%; }
+  to { background-position: 100% 50%; }
+}
+
+/* Gold pill: the coffret's one call to action, on ink. */
+.btn-gold {
+  background: var(--gold);
+  color: var(--ink);
+}
+.btn-gold:hover {
+  background: var(--canvas);
+  color: var(--ink);
 }

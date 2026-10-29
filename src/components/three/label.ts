@@ -5,10 +5,10 @@ import type { Product } from "@/data/products";
 // The label carries the brand's thesis: the lead active at its exact percentage,
 // set in the same whisper-weight type as the site's display headings.
 
-const FAMILY = "OnestLabel";
+export const FAMILY = "OnestLabel";
 let fontsReady: Promise<unknown> | null = null;
 
-function loadFonts() {
+export function loadFonts() {
   if (!fontsReady) {
     const faces = [
       new FontFace(FAMILY, "url(/fonts/onest-200.woff)", { weight: "200" }),

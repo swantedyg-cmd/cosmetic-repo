@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import Coffret from "@/components/Coffret";
 import FormulaTour from "@/components/FormulaTour";
 import Hero from "@/components/Hero";
 import Lookbook from "@/components/Lookbook";
@@ -166,6 +167,7 @@ export default function Home() {
       <RoutineTeaser />
       <Reviews />
       <Refill />
+      <Coffret />
       <Newsletter />
     </>
   );
