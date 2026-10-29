@@ -57,7 +57,7 @@ export default function Header() {
             <Link href="/contact" aria-label="Account" className="hidden hover:text-ember sm:block">
               <UserIcon />
             </Link>
-            <Link href="/cart" aria-label={`Bag, ${count} items`} className="relative hover:text-ember">
+            <Link href="/cart" aria-label={`Bag, ${count} ${count === 1 ? "item" : "items"}`} className="relative hover:text-ember">
               <BagIcon />
               {count > 0 && (
                 <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-tangerine px-1 text-[9px] font-medium text-canvas">
