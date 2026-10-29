@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useRef } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
+import SceneCanvas from "./SceneCanvas";
 import { Environment, Lightformer, Sparkles } from "@react-three/drei";
 import * as THREE from "three";
 import Bottle, { baseOffset } from "./Bottle";
@@ -41,9 +42,9 @@ type Props = {
 
 export default function CoffretScene({ quality, active, ...props }: Props) {
   return (
-    <Canvas
-      frameloop={active ? "always" : "never"}
-      dpr={[1, quality === "high" ? 1.6 : 1.25]}
+    <SceneCanvas
+      quality={quality}
+      active={active}
       camera={{ position: [0, 3.8, 10], fov: 30 }}
       gl={{ antialias: true, alpha: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.1 }}
     >
@@ -61,7 +62,7 @@ export default function CoffretScene({ quality, active, ...props }: Props) {
       </Environment>
 
       <Rig {...props} quality={quality} />
-    </Canvas>
+    </SceneCanvas>
   );
 }
 

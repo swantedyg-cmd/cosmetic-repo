@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
+import SceneCanvas from "./SceneCanvas";
 import { ContactShadows, OrbitControls, Sparkles } from "@react-three/drei";
 import * as THREE from "three";
 import { baseOffset, mouthY } from "./Bottle";
@@ -21,8 +22,8 @@ type Props = {
 
 export default function ProductViewer({ product, color, quality, reducedMotion, opened }: Props) {
   return (
-    <Canvas
-      dpr={[1, quality === "high" ? 1.75 : 1.25]}
+    <SceneCanvas
+      quality={quality}
       camera={{ position: [0, 0.3, 5.6], fov: 30 }}
       gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping }}
     >
@@ -48,7 +49,7 @@ export default function ProductViewer({ product, color, quality, reducedMotion, 
         autoRotate={!reducedMotion && !opened}
         autoRotateSpeed={0.7}
       />
-    </Canvas>
+    </SceneCanvas>
   );
 }
 

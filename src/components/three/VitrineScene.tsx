@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
+import SceneCanvas, { useTier } from "./SceneCanvas";
 import { Environment, Lightformer, MeshReflectorMaterial, Sparkles } from "@react-three/drei";
 import * as THREE from "three";
 import Bottle, { baseOffset } from "./Bottle";
@@ -30,9 +31,9 @@ type Props = {
 
 export default function VitrineScene({ quality, active, ...props }: Props) {
   return (
-    <Canvas
-      frameloop={active ? "always" : "never"}
-      dpr={[1, quality === "high" ? 1.6 : 1.25]}
+    <SceneCanvas
+      quality={quality}
+      active={active}
       camera={{ position: [0, 1.1, 7.6], fov: 30 }}
       gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.1 }}
     >
@@ -62,7 +63,7 @@ export default function VitrineScene({ quality, active, ...props }: Props) {
         />
         <Floor quality={quality} />
       </Rig>
-    </Canvas>
+    </SceneCanvas>
   );
 }
 
@@ -197,15 +198,19 @@ function Station({
   );
 }
 
-/** Smoked mirror on desktop; a plain dark floor on phones, where the extra render pass costs too much. */
+/**
+ * Smoked mirror on desktop; a plain dark floor on phones and on any device that can't hold
+ * the frame rate, since the mirror renders the whole table (glass included) a second time.
+ */
 function Floor({ quality }: { quality: "high" | "low" }) {
+  const tier = useTier();
   return (
     <mesh position-y={-0.15} rotation-x={-Math.PI / 2}>
       <planeGeometry args={[40, 40]} />
-      {quality === "high" ? (
+      {quality === "high" && tier === "full" ? (
         <MeshReflectorMaterial
-          resolution={512}
-          blur={[400, 120]}
+          resolution={256}
+          blur={[300, 90]}
           mixBlur={1}
           mixStrength={1.6}
           mirror={0.6}

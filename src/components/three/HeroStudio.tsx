@@ -2,7 +2,8 @@
 
 import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
+import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
+import SceneCanvas from "./SceneCanvas";
 import { ContactShadows, Sparkles } from "@react-three/drei";
 import * as THREE from "three";
 import Bottle, { baseOffset } from "./Bottle";
@@ -33,9 +34,9 @@ type Props = {
 
 export default function HeroStudio({ quality, reducedMotion, active, exit }: Props) {
   return (
-    <Canvas
-      frameloop={active ? "always" : "never"}
-      dpr={[1, quality === "high" ? 1.75 : 1.25]}
+    <SceneCanvas
+      quality={quality}
+      active={active}
       camera={{ position: [0, 0.5, 11], fov: 28 }}
       gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.05 }}
     >
@@ -68,13 +69,14 @@ export default function HeroStudio({ quality, reducedMotion, active, exit }: Pro
           position={[0.7, FLOOR + 0.001, 0]}
           opacity={0.45}
           scale={12}
+          resolution={256}
           blur={2.4}
           far={3}
           color="#7a2e0c"
           frames={reducedMotion ? 1 : Infinity}
         />
       </Rig>
-    </Canvas>
+    </SceneCanvas>
   );
 }
 

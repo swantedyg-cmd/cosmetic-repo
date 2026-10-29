@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
+import SceneCanvas from "./SceneCanvas";
 import { Text } from "@react-three/drei";
 import * as THREE from "three";
 import Formula from "./Formula";
@@ -23,16 +24,16 @@ type Props = {
 
 export default function TourScene(props: Props) {
   return (
-    <Canvas
-      frameloop={props.active ? "always" : "never"}
-      dpr={[1, props.quality === "high" ? 1.75 : 1.25]}
+    <SceneCanvas
+      quality={props.quality}
+      active={props.active}
       camera={{ position: [0, 0, 6], fov: 32 }}
       gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping }}
     >
       <color attach="background" args={["#ffffff"]} />
       <Studio />
       <Scene {...props} />
-    </Canvas>
+    </SceneCanvas>
   );
 }
 
