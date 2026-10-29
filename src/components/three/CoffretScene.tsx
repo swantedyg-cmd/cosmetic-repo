@@ -44,7 +44,7 @@ export default function CoffretScene({ quality, active, ...props }: Props) {
     <Canvas
       frameloop={active ? "always" : "never"}
       dpr={[1, quality === "high" ? 1.6 : 1.25]}
-      camera={{ position: [0, 2.6, 9], fov: 30 }}
+      camera={{ position: [0, 3.8, 10], fov: 30 }}
       gl={{ antialias: true, alpha: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.1 }}
     >
       <ambientLight intensity={0.2} />
@@ -55,7 +55,9 @@ export default function CoffretScene({ quality, active, ...props }: Props) {
         <Lightformer form="rect" intensity={2.6} position={[0, 5, 2]} scale={[8, 1.2, 1]} rotation-x={Math.PI / 2} />
         <Lightformer form="rect" color={GOLD} intensity={2.4} position={[-5, 1.5, 1]} scale={[0.5, 6, 1]} rotation-y={Math.PI / 2} />
         <Lightformer form="rect" color={GOLD} intensity={2.4} position={[5, 1.5, 1]} scale={[0.5, 6, 1]} rotation-y={-Math.PI / 2} />
-        <Lightformer form="rect" intensity={0.8} position={[0, 2, 6]} scale={[5, 2, 1]} />
+        <Lightformer form="rect" intensity={1.6} position={[0, 2, 6]} scale={[5, 2, 1]} />
+        {/* A warm softbox up front and to the left, so the lacquer faces carry a long gold gradient. */}
+        <Lightformer form="rect" color={GOLD} intensity={1.8} position={[-4, 3, 5]} scale={[3, 4, 1]} rotation-y={-0.7} />
       </Environment>
 
       <Rig {...props} quality={quality} />
@@ -68,9 +70,9 @@ function Rig({ products, progress, quality, reducedMotion }: Omit<Props, "active
   const { viewport } = useThree();
   const wide = viewport.aspect > 1.1;
   // Desktop keeps the left of the frame for the copy; phones centre the box above it.
-  const scale = wide ? Math.min(0.95, viewport.width / 10) : Math.min(0.8, viewport.width / 5.2);
+  const scale = wide ? Math.min(0.62, viewport.width / 14) : Math.min(0.55, viewport.width / 7);
   const x = wide ? viewport.width * 0.16 : 0;
-  const y = wide ? -0.9 : -0.2;
+  const y = wide ? -0.6 : 0.5;
   const t = useRef(0);
   const box = useRef<THREE.Group>(null);
 
@@ -87,9 +89,9 @@ function Rig({ products, progress, quality, reducedMotion }: Omit<Props, "active
     const py = reducedMotion ? 0 : state.pointer.y * 0.2;
     const cam = state.camera;
     cam.position.x = damp(cam.position.x, px, speed.slow, dt);
-    cam.position.y = damp(cam.position.y, THREE.MathUtils.lerp(2.8, 1.7, p) + py, speed.slow, dt);
-    cam.position.z = THREE.MathUtils.lerp(9.5, 8.2, ease.inOutCubic(p));
-    cam.lookAt(wide ? x * 0.35 : 0, 0.3, 0);
+    cam.position.y = damp(cam.position.y, THREE.MathUtils.lerp(3.8, 2.9, p) + py, speed.slow, dt);
+    cam.position.z = THREE.MathUtils.lerp(10, 9, ease.inOutCubic(p));
+    cam.lookAt(wide ? x * 0.35 : 0, 0.4, 0);
   });
 
   return (
@@ -119,7 +121,7 @@ function Rig({ products, progress, quality, reducedMotion }: Omit<Props, "active
 function useMaterials() {
   return useMemo(
     () => ({
-      lacquer: new THREE.MeshPhysicalMaterial({ color: "#101a1a", roughness: 0.18, metalness: 0.25, clearcoat: 1, clearcoatRoughness: 0.06 }),
+      lacquer: new THREE.MeshPhysicalMaterial({ color: "#182422", roughness: 0.32, metalness: 0.35, clearcoat: 1, clearcoatRoughness: 0.08, envMapIntensity: 1.6 }),
       gold: new THREE.MeshStandardMaterial({ color: GOLD, metalness: 1, roughness: 0.2 }),
       // Deep ember velvet: a soft sheen that brightens at grazing angles.
       velvet: new THREE.MeshPhysicalMaterial({
@@ -166,7 +168,7 @@ function Body() {
 }
 
 /** A thin gold rectangle of rods tracing the box outline at height y. */
-function Trim({ y, w, d, r = 0.016 }: { y: number; w: number; d: number; r?: number }) {
+function Trim({ y, w, d, r = 0.022 }: { y: number; w: number; d: number; r?: number }) {
   const m = useMaterials();
   return (
     <group position-y={y}>
@@ -227,10 +229,10 @@ function Lid({ t, reducedMotion }: { t: { current: number }; reducedMotion: bool
       {/* Gold-foil monogram, stamped on the lid. */}
       <mesh position-y={LID_HEIGHT + 0.002} rotation-x={-Math.PI / 2}>
         <planeGeometry args={[lw * 0.92, ld * 0.86]} />
-        <meshStandardMaterial map={monogram} transparent color={GOLD} metalness={0.9} roughness={0.28} />
+        <meshStandardMaterial map={monogram} emissiveMap={monogram} emissive={GOLD} emissiveIntensity={0.35} transparent color={GOLD} metalness={0.7} roughness={0.3} />
       </mesh>
-      <Trim y={LID_HEIGHT} w={lw} d={ld} r={0.012} />
-      <Trim y={0.01} w={lw} d={ld} r={0.012} />
+      <Trim y={LID_HEIGHT} w={lw} d={ld} r={0.016} />
+      <Trim y={0.01} w={lw} d={ld} r={0.016} />
     </group>
   );
 }
