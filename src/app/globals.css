@@ -197,6 +197,45 @@ h3 {
   to { transform: translateX(-50%); }
 }
 
+/* Ingredient band: soft-faded edges, a 3D swell rolling along the line, and a slow
+   sheen across each figure. */
+.wave-band {
+  perspective: 900px;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+}
+.wave-band .marquee {
+  animation-duration: 70s;
+  transform-style: preserve-3d;
+}
+.wave-cell {
+  animation: wave-swell 6s ease-in-out infinite;
+  animation-delay: var(--d, 0s);
+  transform-origin: 50% 50%;
+}
+@keyframes wave-swell {
+  0%, 100% { transform: translate3d(0, -9px, 18px) rotateX(16deg); }
+  50% { transform: translate3d(0, 9px, -18px) rotateX(-16deg); }
+}
+.wave-figure {
+  background: linear-gradient(100deg, var(--ink) 40%, var(--ember) 50%, var(--ink) 60%);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: wave-sheen 6s ease-in-out infinite;
+  animation-delay: var(--d, 0s);
+}
+@keyframes wave-sheen {
+  0% { background-position: 100% 0; }
+  60%, 100% { background-position: 0 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wave-cell,
+  .wave-figure { animation: none; }
+  .wave-figure { color: var(--ink); background: none; }
+}
+
 /* ---------- Intro curtain (skipped after the first view per tab) ---------- */
 :root {
   --intro: 1300ms;
