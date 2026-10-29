@@ -99,9 +99,6 @@ export default function Header() {
               {n.label}
             </Link>
           ))}
-          <p className="mobile-menu-link mt-8 text-sm text-smoke" style={{ "--i": NAV.length } as React.CSSProperties}>
-            Free shipping over €60 · A sample with every order
-          </p>
         </nav>
       </div>
     </header>
