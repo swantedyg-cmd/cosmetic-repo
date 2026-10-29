@@ -40,13 +40,13 @@ export default function VitrineScene({ quality, active, ...props }: Props) {
       <fog attach="fog" args={[INK, 8, 16]} />
       <ambientLight intensity={0.15} />
       <spotLight position={[0, 7, 4]} angle={0.4} penumbra={1} intensity={90} color="#fff1dc" />
-      <pointLight position={[0, 1.5, -3.5]} color="#f7651a" intensity={5} distance={9} />
+      <pointLight position={[0, 1.5, -3.5]} color={GOLD} intensity={4} distance={9} />
       {/* Reflections only: warm gold strips and one cool softbox, so the glass reads as glass on black. */}
       <Environment resolution={256}>
         <Lightformer form="rect" intensity={2.4} position={[0, 5, 1]} scale={[6, 1, 1]} rotation-x={Math.PI / 2} />
         <Lightformer form="rect" color={GOLD} intensity={2.2} position={[-4, 1.5, 1]} scale={[0.6, 5, 1]} rotation-y={Math.PI / 2} />
         <Lightformer form="rect" color={GOLD} intensity={2.2} position={[4, 1.5, 1]} scale={[0.6, 5, 1]} rotation-y={-Math.PI / 2} />
-        <Lightformer form="ring" color="#f15730" intensity={1.2} position={[0, 1, -5]} scale={2.5} />
+        <Lightformer form="ring" color={GOLD} intensity={0.8} position={[0, 1, -5]} scale={2.5} />
       </Environment>
 
       <Rig reducedMotion={props.reducedMotion}>
