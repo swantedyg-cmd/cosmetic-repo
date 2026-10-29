@@ -40,7 +40,7 @@ export default function VitrineScene({ quality, active, ...props }: Props) {
       <fog attach="fog" args={[INK, 8, 16]} />
       <ambientLight intensity={0.15} />
       <spotLight position={[0, 7, 4]} angle={0.4} penumbra={1} intensity={90} color="#fff1dc" />
-      <pointLight position={[0, 1.5, -3.5]} color="#f7651a" intensity={14} distance={9} />
+      <pointLight position={[0, 1.5, -3.5]} color="#f7651a" intensity={5} distance={9} />
       {/* Reflections only: warm gold strips and one cool softbox, so the glass reads as glass on black. */}
       <Environment resolution={256}>
         <Lightformer form="rect" intensity={2.4} position={[0, 5, 1]} scale={[6, 1, 1]} rotation-x={Math.PI / 2} />
@@ -71,7 +71,7 @@ function Rig({ children, reducedMotion }: { children: React.ReactNode; reducedMo
   const { viewport } = useThree();
   const wide = viewport.aspect > 1.1;
   // Phones crop the side plinths and keep the front bottle large.
-  const scale = wide ? Math.min(0.92, viewport.width / 7.4, viewport.height / 3.9) : Math.min(0.8, viewport.width / 3.6);
+  const scale = wide ? Math.min(0.6, viewport.width / 11, viewport.height / 6.6) : Math.min(0.5, viewport.width / 3.8);
 
   useFrame((state, dt) => {
     const px = reducedMotion ? 0 : state.pointer.x * 0.5;
@@ -83,7 +83,7 @@ function Rig({ children, reducedMotion }: { children: React.ReactNode; reducedMo
   });
 
   return (
-    <group position-y={-1.05 * scale} scale={scale}>
+    <group position-y={-1.4 * scale} scale={scale}>
       {children}
     </group>
   );
