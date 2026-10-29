@@ -10,8 +10,8 @@ import { useEffect, useRef } from "react";
 type Layer = { share: number; size: [number, number]; speed: [number, number]; alpha: [number, number]; soft: number; parallax: number };
 
 const LAYERS: Layer[] = [
-  { share: 0.5, size: [1.5, 3], speed: [3, 7], alpha: [0.35, 0.6], soft: 0.35, parallax: 0.04 },
-  { share: 0.35, size: [3.5, 7], speed: [7, 13], alpha: [0.22, 0.4], soft: 0.6, parallax: 0.1 },
+  { share: 0.5, size: [2, 3.5], speed: [3, 7], alpha: [0.18, 0.35], soft: 0.7, parallax: 0.04 },
+  { share: 0.35, size: [4, 8], speed: [7, 13], alpha: [0.14, 0.28], soft: 0.85, parallax: 0.1 },
   { share: 0.15, size: [12, 26], speed: [12, 20], alpha: [0.08, 0.16], soft: 1, parallax: 0.22 },
 ];
 const COLORS = ["#ff8562", "#f7651a", "#d6b47c", "#ffb48f"];
