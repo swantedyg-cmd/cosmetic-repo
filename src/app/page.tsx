@@ -11,6 +11,7 @@ import Reviews from "@/components/Reviews";
 import RoutineTeaser from "@/components/RoutineTeaser";
 import Reveal from "@/components/Reveal";
 import TextureStudy from "@/components/TextureStudy";
+import Vitrine from "@/components/Vitrine";
 import { DropIcon, LeafIcon, RabbitIcon, RecycleIcon } from "@/components/icons";
 import { editorial } from "@/data/photos";
 import { brandStat, featured, getProduct, products } from "@/data/products";
@@ -87,6 +88,7 @@ export default function Home() {
       <FormulaTour />
       <Lookbook />
       <TextureStudy />
+      <Vitrine />
 
       {/* Every active, at its real concentration */}
       <section className="mx-auto max-w-[1280px] px-5 py-24 md:px-10">

@@ -13,6 +13,7 @@
   --canvas: #ffffff;
   --mist: #eeeeee; /* soft dividers */
   --smoke: #818181; /* captions, metadata */
+  --gold: #d6b47c; /* the vitrine only: rims, hairlines on ink */
 }
 
 @theme inline {
@@ -24,6 +25,7 @@
   --color-canvas: var(--canvas);
   --color-mist: var(--mist);
   --color-smoke: var(--smoke);
+  --color-gold: var(--gold);
   --font-display: var(--font-onest);
   --font-sans: var(--font-onest);
 }
@@ -472,4 +474,47 @@ html.lenis body {
   .mobile-menu, .mobile-menu.is-open, .mobile-menu-link, .mobile-menu.is-open .mobile-menu-link {
     transition: none;
   }
+}
+
+/* Vitrine caption: each product's details fade up as it turns to the front. */
+.vitrine-caption {
+  animation: vitrine-caption 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes vitrine-caption {
+  from { opacity: 0; transform: translateY(18px); filter: blur(6px); }
+}
+
+/*
+ * Card tilt: the card leans towards the pointer and its photo floats forward,
+ * with a soft sheen that follows the cursor. Mouse and trackpad only.
+ */
+.tilt-sheen {
+  opacity: 0;
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .tilt {
+    transform: perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+    transform-style: preserve-3d;
+    transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .tilt.is-tilting {
+    transition-duration: 0.15s;
+  }
+  .tilt > a {
+    transform-style: preserve-3d;
+  }
+  .tilt-pop {
+    transform: translateZ(28px);
+  }
+  .tilt-sheen {
+    background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgb(255 255 255 / 0.45), transparent 45%);
+    mix-blend-mode: soft-light;
+    transition: opacity 0.5s ease;
+  }
+  .tilt.is-tilting .tilt-sheen {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vitrine-caption { animation: none; }
 }
