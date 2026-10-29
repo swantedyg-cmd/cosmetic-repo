@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="mx-auto w-full max-w-[1280px] px-5 pb-8 md:px-10">
+    <footer className="relative z-[1] mx-auto w-full max-w-[1280px] px-5 pb-8 md:px-10">
       <div className="grid gap-10 border-t border-graphite pt-10 md:grid-cols-[2fr_1fr_1fr]">
         <p className="max-w-xs text-sm text-smoke">Skincare in clear glass, with every percentage on the label.</p>
         <ul className="space-y-2 text-sm">

@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import EmailModal from "@/components/EmailModal";
 import Intro, { introScript } from "@/components/Intro";
 import Cursor from "@/components/Cursor";
+import Atmosphere from "@/components/Atmosphere";
 import SmoothScroll from "@/components/SmoothScroll";
 import { CartProvider } from "@/lib/cart";
 import "./globals.css";
@@ -27,9 +28,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Intro />
         <SmoothScroll />
         <Cursor />
+        <Atmosphere />
         <CartProvider>
           <Header />
-          <main className="flex-1">{children}</main>
+          <main className="relative z-[1] flex-1">{children}</main>
           <Footer />
           <EmailModal />
         </CartProvider>
