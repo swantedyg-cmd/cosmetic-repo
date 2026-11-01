@@ -14,7 +14,7 @@ export default function ProductCard({ product: p, priority = false }: { product:
     <Tilt className="h-full">
       <div className="group flex h-full flex-col rounded-[10px] border-[1.5px] border-apricot bg-canvas p-5 transition-colors duration-500 hover:border-ember">
         <Link href={`/shop/${p.slug}`} data-cursor="View" className="flex flex-1 flex-col">
-          <div className="tilt-pop relative aspect-[4/5] overflow-hidden rounded-[15px] bg-[#f8e4d6]">
+          <div className="tilt-pop relative aspect-[4/5] overflow-hidden rounded-[15px] bg-blush-3">
             <Image
               src={pack.src}
               alt={pack.alt}

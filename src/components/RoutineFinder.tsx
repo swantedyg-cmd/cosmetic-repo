@@ -169,7 +169,7 @@ export default function RoutineFinder() {
         )}
       </div>
 
-      <div className="relative min-h-[360px] overflow-hidden rounded-[15px] bg-[#fbe9dc] md:min-h-[520px]">
+      <div className="relative min-h-[360px] overflow-hidden rounded-[15px] bg-blush md:min-h-[520px]">
         <LayerStack key={routine.map((p) => p.slug).join()} steps={done ? routine : []} className="absolute inset-0" />
         {!done && (
           <p className="absolute inset-x-0 bottom-6 text-center text-sm text-ink/60">Your layers stack up here</p>

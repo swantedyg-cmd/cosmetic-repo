@@ -66,7 +66,7 @@ export default function Lookbook() {
   }, []);
 
   return (
-    <section ref={section} className="relative bg-[#fbe9dc] md:h-[320svh]" aria-label="Lookbook">
+    <section ref={section} className="relative bg-blush md:h-[320svh]" aria-label="Lookbook">
       <div className="overflow-x-auto md:sticky md:top-0 md:h-svh md:overflow-hidden">
         <div
           ref={track}
@@ -87,7 +87,7 @@ export default function Lookbook() {
           {FRAMES.map((f) => {
             const body = (
               <>
-                <div className={`relative overflow-hidden rounded-[15px] bg-[#f3d6c3] ${SIZE[f.size]}`}>
+                <div className={`relative overflow-hidden rounded-[15px] bg-blush-4 ${SIZE[f.size]}`}>
                   <Image
                     data-drift
                     src={f.photo.src}

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useCart } from "@/lib/cart";
 import { BagIcon, SearchIcon, UserIcon } from "./icons";
+import ThemeToggle from "./ThemeToggle";
 
 const NAV = [
   { href: "/shop", label: "Shop" },
@@ -29,7 +30,7 @@ export default function Header() {
 
   return (
     <header className="fixed inset-x-0 top-0 z-50">
-      <p className="bg-graphite py-2 text-center text-[11px] tracking-normal text-canvas">
+      <p className="keep-day bg-graphite py-2 text-center text-[11px] tracking-normal text-canvas">
         Free shipping over €60 · A sample with every order
       </p>
       <div className="border-b border-mist bg-canvas/90 backdrop-blur-md">
@@ -51,6 +52,7 @@ export default function Header() {
             ))}
           </nav>
           <div className="flex items-center gap-5 text-ink">
+            <ThemeToggle className="hidden sm:inline-flex" />
             <Link href="/shop" aria-label="Search products" className="hover:text-ember">
               <SearchIcon />
             </Link>
@@ -86,6 +88,10 @@ export default function Header() {
         inert={!open}
       >
         <nav className="mx-auto flex max-w-[1280px] flex-col px-5 pb-10 pt-4 md:px-10">
+          <div className="flex items-center justify-between border-b border-mist py-4 sm:hidden">
+            <span className="text-sm text-smoke">Ritual</span>
+            <ThemeToggle />
+          </div>
           {NAV.map((n, i) => (
             <Link
               key={n.href}

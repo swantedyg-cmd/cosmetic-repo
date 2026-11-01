@@ -58,7 +58,7 @@ export default function Coffret() {
   };
 
   return (
-    <section ref={section} className="coffret relative h-[320svh] text-canvas" aria-labelledby="coffret-title">
+    <section ref={section} className="keep-day coffret relative h-[320svh] text-canvas" aria-labelledby="coffret-title">
       <div ref={stageRef} className="sticky top-0 h-svh overflow-hidden">
         <div className="absolute inset-0" aria-hidden>
           <CoffretScene products={SET} progress={progress} quality={quality} reducedMotion={reducedMotion} active={inView} />

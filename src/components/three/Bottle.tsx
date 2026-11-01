@@ -4,8 +4,8 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { MeshTransmissionMaterial } from "@react-three/drei";
 import * as THREE from "three";
-import type { BottleShape, Product } from "@/data/products";
-import { createLabelTexture } from "./label";
+import type { BottleShape, Engraving, Product } from "@/data/products";
+import { createEngravingTexture, createLabelTexture } from "./label";
 import { damp, speed } from "./motion";
 
 // Procedural packaging: each shape is a lathe profile (radius, height) spun around Y.
@@ -65,12 +65,14 @@ type BottleProps = {
   press?: { current: number };
   /** Rising bubbles inside clear liquids. Off for small or distant bottles. */
   bubbles?: boolean;
+  /** Personal engraving, wrapped round the back of the glass. */
+  engraving?: Engraving;
 };
 
 const capMaterial = { color: "#0d1717", roughness: 0.5, metalness: 0.05 };
 const metalMaterial = { color: "#d6c3a5", roughness: 0.22, metalness: 1 };
 
-export default function Bottle({ product, color, glass = "native", lowQuality, open, press, bubbles }: BottleProps) {
+export default function Bottle({ product, color, glass = "native", lowQuality, open, press, bubbles, engraving }: BottleProps) {
   const fillMat = useRef<THREE.MeshPhysicalMaterial>(null);
   const closure = useRef<THREE.Group>(null);
   const squeeze = useRef<THREE.Group>(null);
@@ -108,7 +110,7 @@ export default function Bottle({ product, color, glass = "native", lowQuality, o
     />
   );
 
-  if (product.shape === "stick") return <Stick product={product} fill={fill} open={open} />;
+  if (product.shape === "stick") return <Stick product={product} fill={fill} open={open} engraving={engraving} />;
 
   const profile = PROFILES[product.shape];
   return (
@@ -119,6 +121,7 @@ export default function Bottle({ product, color, glass = "native", lowQuality, o
         {bubbles && !cream && <Bubbles points={profile.fill} color={tint} />}
       </Slosh>
       <Label product={product} {...profile.label} />
+      {engraving?.text && <Engrave engraving={engraving} {...profile.label} />}
       {/* Closure pivots at the neck so it can lift and tip off. */}
       <group ref={closure} position-y={neck}>
         <group ref={squeeze}>
@@ -351,6 +354,47 @@ function Label({
   );
 }
 
+/**
+ * The engraving sits on the back, opposite the label, a hair proud of the surface.
+ * Foil is a warm metal that catches the studio lights; etched reads as frosted glass.
+ */
+function Engrave({ engraving, radius, y, height }: { engraving: Engraving; radius: number; y: number; height: number }) {
+  const band = Math.min(height * 0.5, radius * 0.7);
+  const arc = 2.2;
+  const aspect = (radius * arc) / band;
+  const texture = useMemo(
+    () => createEngravingTexture(engraving.text, engraving.style, aspect),
+    [engraving.text, engraving.style, aspect],
+  );
+  useEffect(() => () => texture.dispose(), [texture]);
+  const foil = engraving.style === "foil";
+  const opacity = foil ? 1 : 0.7;
+  return (
+    <mesh
+      position-y={y}
+      renderOrder={2}
+      // Glass refraction renders the scene into an offscreen target; hide the engraving
+      // there so the glass doesn't show a blurred second copy of it.
+      onBeforeRender={(renderer, _s, _c, _g, material) => {
+        (material as THREE.MeshStandardMaterial).opacity = renderer.getRenderTarget() ? 0 : opacity;
+      }}
+    >
+      <cylinderGeometry args={[radius + 0.004, radius + 0.004, band, 96, 1, true, Math.PI - arc / 2, arc]} />
+      <meshStandardMaterial
+        map={texture}
+        emissiveMap={texture}
+        emissive="#ffffff"
+        emissiveIntensity={foil ? 0.35 : 0.5}
+        transparent
+        opacity={opacity}
+        depthWrite={false}
+        metalness={foil ? 0.75 : 0}
+        roughness={foil ? 0.25 : 1}
+      />
+    </mesh>
+  );
+}
+
 function DropperCap() {
   return (
     <group position-y={1.78}>
@@ -390,7 +434,7 @@ function JarLid() {
 
 const STICK_BULLET: [number, number][] = [[0, 0], [0.24, 0], [0.24, 0.42], [0.2, 0.52], [0.1, 0.58], [0, 0.6]];
 
-function Stick({ product, fill, open }: { product: Product; fill: React.ReactNode; open?: { current: number } }) {
+function Stick({ product, fill, open, engraving }: { product: Product; fill: React.ReactNode; open?: { current: number }; engraving?: Engraving }) {
   const bullet = useLathe(STICK_BULLET);
   const ref = useRef<THREE.Mesh>(null);
 
@@ -408,6 +452,7 @@ function Stick({ product, fill, open }: { product: Product; fill: React.ReactNod
         <meshStandardMaterial {...capMaterial} />
       </mesh>
       <Label product={product} {...STICK_LABEL} dark />
+      {engraving?.text && <Engrave engraving={engraving} {...STICK_LABEL} />}
       <mesh position-y={1.14}>
         <cylinderGeometry args={[0.28, 0.28, 0.08, 64]} />
         <meshStandardMaterial {...metalMaterial} />

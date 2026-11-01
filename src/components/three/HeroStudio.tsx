@@ -10,6 +10,7 @@ import Bottle, { baseOffset } from "./Bottle";
 import Studio from "./Studio";
 import { damp, ease, enter, introDelay, speed, timing } from "./motion";
 import { getProduct, type Product } from "@/data/products";
+import { sceneColors, useTheme } from "@/lib/theme";
 
 // The hero is staged like an editorial beauty shot: the whole range on plinths
 // in a warm cyclorama, lit by a soft orange strobe that slowly pulses.
@@ -139,6 +140,7 @@ function Piece({
   reducedMotion: boolean;
 }) {
   const router = useRouter();
+  const palette = sceneColors[useTheme()];
   const plinthRef = useRef<THREE.Mesh>(null);
   const bottle = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState(false);
@@ -228,7 +230,7 @@ function Piece({
     <group position={[x, 0, z]}>
       <mesh ref={plinthRef} position-y={FLOOR}>
         <cylinderGeometry args={[radius, radius, 1, 96]} />
-        <meshStandardMaterial color="#fbeee4" roughness={0.9} emissive="#f6d9c6" emissiveIntensity={0.25} />
+        <meshStandardMaterial color={palette.backdrop} roughness={0.9} emissive={palette.backdropGlow} emissiveIntensity={0.25} />
       </mesh>
       <group
         ref={toss}
@@ -312,10 +314,11 @@ const backdropVertex = /* glsl */ `
 const backdropFragment = /* glsl */ `
   uniform float uPulse;
   uniform float uAspect;
+  uniform float uNight;
   varying vec2 vUv;
   void main() {
-    vec3 top = vec3(0.996, 0.957, 0.929);
-    vec3 bottom = vec3(0.973, 0.82, 0.733);
+    vec3 top = mix(vec3(0.996, 0.957, 0.929), vec3(0.075, 0.052, 0.042), uNight);
+    vec3 bottom = mix(vec3(0.973, 0.82, 0.733), vec3(0.2, 0.105, 0.065), uNight);
     vec3 glow = vec3(0.969, 0.396, 0.102);
     vec3 col = mix(bottom, top, smoothstep(0.05, 0.85, vUv.y));
     vec2 p = vec2((vUv.x - 0.6) * uAspect, vUv.y - 0.42);
@@ -329,12 +332,15 @@ const backdropFragment = /* glsl */ `
 function Backdrop({ reducedMotion }: { reducedMotion: boolean }) {
   const { viewport } = useThree();
   const material = useRef<THREE.ShaderMaterial>(null);
-  const uniforms = useMemo(() => ({ uPulse: { value: 0.5 }, uAspect: { value: 1 } }), []);
+  const night = useTheme() === "night";
+  const uniforms = useMemo(() => ({ uPulse: { value: 0.5 }, uAspect: { value: 1 }, uNight: { value: 0 } }), []);
   const v = viewport.getCurrentViewport(undefined, new THREE.Vector3(0, 0, -6));
 
-  useFrame((state) => {
+  useFrame((state, dt) => {
     const u = material.current?.uniforms;
     if (!u) return;
+    // The cyclorama dims to dusk over about a second when the theme flips.
+    u.uNight.value = reducedMotion ? Number(night) : damp(u.uNight.value, Number(night), speed.base, dt);
     u.uPulse.value = reducedMotion ? 0.5 : (Math.sin(state.clock.elapsedTime * 1.2) + 1) / 2;
     u.uAspect.value = v.width / v.height;
   });

@@ -7,7 +7,7 @@ export default function Newsletter() {
 
   return (
     <section className="mx-auto max-w-[1280px] px-5 py-20 md:px-10">
-      <div className="grid gap-8 rounded-[10px] bg-tangerine px-6 py-12 text-canvas md:grid-cols-2 md:items-end md:px-12 md:py-16">
+      <div className="keep-day grid gap-8 rounded-[10px] bg-tangerine px-6 py-12 text-canvas md:grid-cols-2 md:items-end md:px-12 md:py-16">
         <div>
           <h2 className="display text-[clamp(2.2rem,4.4vw,3.25rem)] !text-canvas">Get new formulas first</h2>
           <p className="mt-4 max-w-sm">One email when something launches. Nothing in between.</p>

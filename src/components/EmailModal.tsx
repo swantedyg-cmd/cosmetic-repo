@@ -27,7 +27,7 @@ export default function EmailModal() {
     <dialog
       ref={dialog}
       onClick={(e) => e.target === dialog.current && dialog.current?.close()}
-      className="m-auto w-[min(480px,calc(100vw-32px))] rounded-[10px] bg-tangerine p-0 text-canvas backdrop:bg-black/60"
+      className="keep-day m-auto w-[min(480px,calc(100vw-32px))] rounded-[10px] bg-tangerine p-0 text-canvas backdrop:bg-black/60"
     >
       <div className="relative px-8 pb-10 pt-12 text-center">
         <button

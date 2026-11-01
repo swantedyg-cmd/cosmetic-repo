@@ -9,7 +9,7 @@ import { useInView } from "@/lib/useInView";
 
 const HeroStudio = dynamic(() => import("./three/HeroStudio"), {
   ssr: false,
-  loading: () => <div className="h-full w-full bg-[#fbe9dc]" />,
+  loading: () => <div className="h-full w-full bg-blush" />,
 });
 
 export default function Hero() {
@@ -28,7 +28,7 @@ export default function Hero() {
   }, []);
 
   return (
-    <section ref={ref} className="relative h-svh min-h-[640px] overflow-hidden bg-[#fbe9dc]">
+    <section ref={ref} className="relative h-svh min-h-[640px] overflow-hidden bg-blush">
       <div className="absolute inset-0">
         <HeroStudio quality={quality} reducedMotion={reducedMotion} active={inView} exit={exit} />
       </div>

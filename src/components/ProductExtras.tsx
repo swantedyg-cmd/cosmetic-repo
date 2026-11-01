@@ -2,7 +2,9 @@ import Link from "next/link";
 import ProductCard from "./ProductCard";
 import Reveal from "./Reveal";
 import Reviews from "./Reviews";
-import { products, type Product } from "@/data/products";
+import RecentlyViewed from "./RecentlyViewed";
+import { completeRitual } from "@/lib/ritual";
+import { type Product } from "@/data/products";
 
 // Placeholder policies — confirm shipping, returns and patch-test wording with the client.
 const GENERAL_FAQ = [
@@ -13,7 +15,8 @@ const GENERAL_FAQ = [
 ];
 
 export default function ProductExtras({ product }: { product: Product }) {
-  const pairs = products.filter((p) => p.slug !== product.slug).slice(0, 3);
+  // The steps this product does not cover, for the same time of day.
+  const pairs = completeRitual([product.slug]);
   const faq = [{ q: `How do I use ${product.name}?`, a: product.howToUse }, ...GENERAL_FAQ];
 
   return (
@@ -22,7 +25,7 @@ export default function ProductExtras({ product }: { product: Product }) {
 
       <section className="mx-auto max-w-[1280px] px-5 py-20 md:px-10">
         <Reveal className="flex items-end justify-between gap-6">
-          <h2 className="display text-[clamp(2.2rem,4.4vw,3.25rem)]">Layers well with</h2>
+          <h2 className="display text-[clamp(2.2rem,4.4vw,3.25rem)]">Complete the ritual</h2>
           <Link href="/routine" className="text-sm underline decoration-apricot decoration-[1.5px] underline-offset-[6px] hover:text-ember">
             Build your routine
           </Link>
@@ -57,6 +60,7 @@ export default function ProductExtras({ product }: { product: Product }) {
           </div>
         </div>
       </section>
+      <RecentlyViewed exclude={product.slug} />
     </>
   );
 }

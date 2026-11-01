@@ -132,7 +132,7 @@ export default function Home() {
       </section>
 
       {/* Order of application */}
-      <section className="bg-ink text-canvas">
+      <section className="keep-day bg-ink text-canvas">
         <div className="mx-auto grid max-w-[1280px] gap-14 px-5 py-24 md:grid-cols-[0.8fr_1fr_1fr] md:gap-12 md:px-10">
           <Reveal variant="clip" className="relative aspect-[3/4] overflow-hidden rounded-[15px] md:row-span-2 md:aspect-auto">
             <Image src={editorial.applying.src} alt={editorial.applying.alt} fill sizes="(min-width: 768px) 30vw, 100vw" className="object-cover" />

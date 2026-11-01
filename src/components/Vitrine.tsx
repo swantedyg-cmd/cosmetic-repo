@@ -84,7 +84,7 @@ export default function Vitrine() {
   };
 
   return (
-    <section className="bg-ink text-canvas" aria-labelledby="vitrine-title">
+    <section className="keep-day bg-ink text-canvas" aria-labelledby="vitrine-title">
       <div
         ref={stageRef}
         className="relative h-[100svh] min-h-[640px] overflow-hidden"

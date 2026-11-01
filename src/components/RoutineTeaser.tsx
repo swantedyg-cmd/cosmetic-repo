@@ -20,7 +20,7 @@ export default function RoutineTeaser() {
           </p>
           <Link href="/routine" className="btn mt-8">Find your routine</Link>
         </Reveal>
-        <Reveal variant="clip" className="relative aspect-[5/4] overflow-hidden rounded-[15px] bg-[#fbe9dc]">
+        <Reveal variant="clip" className="relative aspect-[5/4] overflow-hidden rounded-[15px] bg-blush">
           <LayerStack steps={SAMPLE} className="absolute inset-0" />
         </Reveal>
       </div>

@@ -9,6 +9,7 @@ import Formula from "./Formula";
 import { damp, speed, stageOpen } from "./motion";
 import Studio from "./Studio";
 import type { Product } from "@/data/products";
+import { sceneColors, useTheme } from "@/lib/theme";
 
 const FONT = "/fonts/onest-200.woff";
 
@@ -23,6 +24,7 @@ type Props = {
 };
 
 export default function TourScene(props: Props) {
+  const theme = useTheme();
   return (
     <SceneCanvas
       quality={props.quality}
@@ -30,7 +32,7 @@ export default function TourScene(props: Props) {
       camera={{ position: [0, 0, 6], fov: 32 }}
       gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping }}
     >
-      <color attach="background" args={["#ffffff"]} />
+      <color attach="background" args={[sceneColors[theme].tour]} />
       <Studio />
       <Scene {...props} />
     </SceneCanvas>
@@ -132,6 +134,7 @@ function Figure({
   open: { current: number };
 }) {
   const ref = useRef<THREE.Mesh & { fillOpacity: number }>(null);
+  const theme = useTheme();
   const { viewport } = useThree();
   const size = Math.min(viewport.height * 0.62, (viewport.width * 0.9) / (text.length * 0.6));
 
@@ -150,7 +153,7 @@ function Figure({
       font={FONT}
       fontSize={size}
       letterSpacing={-0.09}
-      color="#0d1717"
+      color={theme === "night" ? "#f6efe7" : "#0d1717"}
       fillOpacity={0}
       anchorX="center"
       anchorY="middle"

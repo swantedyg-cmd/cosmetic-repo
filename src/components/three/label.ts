@@ -91,3 +91,68 @@ export function createLabelTexture(product: Product, { aspect, dark = false }: L
   loadFonts().then(draw);
   return texture;
 }
+
+/**
+ * Personal engraving on the back of the glass: transparent canvas, letters only.
+ * Foil is drawn as a gold gradient; etched is plain white and shown as frosted glass.
+ */
+export function createEngravingTexture(text: string, style: "foil" | "etched", aspect: number) {
+  const H = 256;
+  const W = Math.round(H * aspect);
+  const canvas = document.createElement("canvas");
+  canvas.width = W;
+  canvas.height = H;
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = 8;
+
+  const draw = () => {
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.clearRect(0, 0, W, H);
+    if (!text) {
+      texture.needsUpdate = true;
+      return;
+    }
+    // Fit the line to about half the wrap so it sits on the back face, not around the sides.
+    const maxW = W * 0.5;
+    let size = H * 0.36;
+    const weight = style === "foil" ? 500 : 200;
+    const track = style === "foil" ? 0.12 : 0.02;
+    const set = () => {
+      ctx.font = `${weight} ${size}px ${FAMILY}`;
+      ctx.letterSpacing = `${size * track}px`;
+    };
+    set();
+    while (ctx.measureText(text).width > maxW && size > H * 0.12) {
+      size *= 0.92;
+      set();
+    }
+    const w = ctx.measureText(text).width;
+    const x = (W - w) / 2;
+    const y = H / 2 + size * 0.35;
+
+    if (style === "foil") {
+      const g = ctx.createLinearGradient(x, y - size, x + w, y);
+      g.addColorStop(0, "#9c7a45");
+      g.addColorStop(0.3, "#f6e7c8");
+      g.addColorStop(0.55, "#d6b47c");
+      g.addColorStop(0.8, "#fff1d6");
+      g.addColorStop(1, "#b08a52");
+      ctx.fillStyle = g;
+    } else {
+      ctx.fillStyle = "#ffffff";
+    }
+    ctx.fillText(text, x, y);
+
+    // A hairline under the name, like a jeweller's mark.
+    ctx.globalAlpha = 0.7;
+    ctx.fillRect(W / 2 - size * 0.5, y + size * 0.28, size, Math.max(1, H * 0.006));
+    ctx.globalAlpha = 1;
+    texture.needsUpdate = true;
+  };
+
+  draw();
+  loadFonts().then(draw);
+  return texture;
+}

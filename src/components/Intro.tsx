@@ -4,7 +4,7 @@ export default function Intro() {
   return (
     <div
       aria-hidden
-      className="intro pointer-events-none fixed inset-0 z-[100] flex flex-col items-center justify-center bg-tangerine text-canvas"
+      className="keep-day intro pointer-events-none fixed inset-0 z-[100] flex flex-col items-center justify-center bg-tangerine text-canvas"
     >
       <p className="intro-word overflow-hidden text-[clamp(3.5rem,13vw,10rem)] font-extralight leading-[0.95] tracking-[-0.08em]">
         {"Solenne".split("").map((c, i) => (

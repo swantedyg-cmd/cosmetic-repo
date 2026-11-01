@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import IngredientIndex from "@/components/IngredientIndex";
+import OriginsGlobe from "@/components/OriginsGlobe";
 import { ingredients } from "@/data/ingredients";
 
 export const metadata: Metadata = {
   title: "Ingredient index",
-  description: "Every active we use, what it does, and the exact percentage in each formula.",
+  description: "Every active we use, what it does, the exact percentage in each formula, and where it comes from.",
+  alternates: { canonical: "/ingredients" },
 };
 
 export default function IngredientsPage() {
@@ -20,6 +22,9 @@ export default function IngredientsPage() {
       </div>
       <div className="mt-14">
         <IngredientIndex />
+      </div>
+      <div className="-mx-5 md:-mx-10">
+        <OriginsGlobe />
       </div>
     </div>
   );

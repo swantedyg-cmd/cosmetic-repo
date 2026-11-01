@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-export const metadata: Metadata = { title: "About" };
+export const metadata: Metadata = {
+  title: "About",
+  description: "Why Solenne prints every active at its exact percentage, in clear glass you can see through.",
+  alternates: { canonical: "/about" },
+};
 
 // Placeholder story — replace with the client's own once they send it.
 const PRINCIPLES = [

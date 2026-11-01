@@ -20,6 +20,7 @@ type Props = {
   open: { current: number };
   press?: { current: number };
   bubbles?: boolean;
+  engraving?: import("@/data/products").Engraving;
   /** Show the percentage labels beside the droplets. */
   labels?: boolean;
   /** Which side the droplets settle on. */

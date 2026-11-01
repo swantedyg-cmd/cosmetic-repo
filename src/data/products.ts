@@ -265,6 +265,44 @@ export const products: Product[] = [
 
 export const featured = products.slice(0, 3);
 
+/** Morning or evening: drives the Day / Night switch and the shop's ritual filter. */
+export type Ritual = "AM" | "PM";
+
+const RITUALS: Record<string, Ritual[]> = {
+  "ember-facial-oil": ["PM"],
+  "dew-serum": ["AM", "PM"],
+  "veil-barrier-cream": ["AM", "PM"],
+  "tint-balm": ["AM"],
+  "halo-gel-cleanser": ["AM", "PM"],
+  "lucent-tonic": ["PM"],
+  "lumen-c-serum": ["AM"],
+  "nocturne-retinal-serum": ["PM"],
+  "cloud-eye-cream": ["AM", "PM"],
+  "green-clay-mask": ["PM"],
+};
+
+export function ritualOf(slug: string): Ritual[] {
+  return RITUALS[slug] ?? ["AM", "PM"];
+}
+
+/** Personalisation: engraved on the back of the glass (or the balm case). */
+export type EngravingStyle = "foil" | "etched";
+export type Engraving = { text: string; style: EngravingStyle };
+export const ENGRAVING_PRICE = 8;
+export const ENGRAVING_MAX = 12;
+export const ENGRAVING_STYLES: { id: EngravingStyle; label: string; note: string }[] = [
+  { id: "foil", label: "Gold foil", note: "Hot-stamped, catches the light" },
+  { id: "etched", label: "Etched", note: "Frosted into the glass, quiet" },
+];
+
+/** Keep what can be engraved: letters, numbers, a few marks, no runs of spaces. */
+export function cleanEngraving(text: string) {
+  return text
+    .replace(/[^\p{L}\p{N} .&'·♡-]/gu, "")
+    .replace(/\s{2,}/g, " ")
+    .slice(0, ENGRAVING_MAX);
+}
+
 export function getProduct(slug: string) {
   return products.find((p) => p.slug === slug);
 }

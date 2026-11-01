@@ -17,7 +17,7 @@ const STEPS = [
 export default function Refill() {
   return (
     <section className="mx-auto max-w-[1280px] px-5 py-24 md:px-10">
-      <div className="grid items-center gap-12 rounded-[15px] bg-[#fbe9dc] p-6 md:grid-cols-[1fr_1.1fr] md:gap-16 md:p-14">
+      <div className="grid items-center gap-12 rounded-[15px] bg-blush p-6 md:grid-cols-[1fr_1.1fr] md:gap-16 md:p-14">
         {/* A pod drops into the jar and the level rises, on a slow loop. */}
         <Reveal className="relative mx-auto aspect-square w-full max-w-[380px]" >
           <div className="refill-scene" aria-hidden>

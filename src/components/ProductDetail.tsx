@@ -1,17 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useId, useState } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { productPhotos } from "@/data/photos";
-import { formatPrice, type Product } from "@/data/products";
+import {
+  ENGRAVING_MAX,
+  ENGRAVING_PRICE,
+  ENGRAVING_STYLES,
+  cleanEngraving,
+  formatPrice,
+  ritualOf,
+  type EngravingStyle,
+  type Product,
+} from "@/data/products";
 import { useCart } from "@/lib/cart";
+import { recordView } from "@/lib/recent";
+import { sceneColors, useTheme } from "@/lib/theme";
 import { useDevice } from "@/lib/useDevice";
 
 const ProductViewer = dynamic(() => import("./three/ProductViewer"), {
   ssr: false,
-  loading: () => <div className="h-full w-full animate-pulse bg-[#f9ebe1]" />,
+  loading: () => <div className="h-full w-full animate-pulse bg-blush-2" />,
 });
 
 export default function ProductDetail({ product }: { product: Product }) {
@@ -19,6 +30,16 @@ export default function ProductDetail({ product }: { product: Product }) {
   const [added, setAdded] = useState(false);
   const [view, setView] = useState<"3d" | number>("3d");
   const [opened, setOpened] = useState(false);
+  const [engraveOpen, setEngraveOpen] = useState(false);
+  const [engraveText, setEngraveText] = useState("");
+  const [engraveStyle, setEngraveStyle] = useState<EngravingStyle>("foil");
+  const theme = useTheme();
+  const inputId = useId();
+  const engraving = engraveOpen && engraveText.trim() ? { text: engraveText.trim(), style: engraveStyle } : undefined;
+  const price = variant.price + (engraving ? ENGRAVING_PRICE : 0);
+  const rituals = ritualOf(product.slug);
+
+  useEffect(() => recordView(product.slug), [product.slug]);
   const photos = productPhotos[product.slug];
   const { add } = useCart();
   const { quality, reducedMotion } = useDevice();
@@ -27,7 +48,7 @@ export default function ProductDetail({ product }: { product: Product }) {
   return (
     <div className="mx-auto grid max-w-7xl gap-10 px-5 pb-24 pt-32 md:grid-cols-[1.2fr_1fr] md:gap-16 md:px-12">
       <div className="md:sticky md:top-28 md:h-[calc(100svh-8rem)]">
-        <div className="relative h-[60svh] overflow-hidden rounded-[15px] bg-[#f9ebe1] md:h-[calc(100%-5.5rem)]">
+        <div className="relative h-[60svh] overflow-hidden rounded-[15px] bg-blush-2 md:h-[calc(100%-5.5rem)]">
           <div className={`absolute inset-0 transition-opacity duration-700 ${view === "3d" ? "opacity-100" : "pointer-events-none opacity-0"}`}>
             <ProductViewer
               product={product}
@@ -35,12 +56,18 @@ export default function ProductDetail({ product }: { product: Product }) {
               quality={quality}
               reducedMotion={reducedMotion}
               opened={opened}
+              engraving={engraving}
+              showBack={!!engraving}
+              background={sceneColors[theme].viewer}
             />
-            <p className="label pointer-events-none absolute bottom-4 left-5 text-smoke">Drag to turn{product.shape === "pump" || product.shape === "dropper" ? " · click the bottle for a drop" : ""}</p>
+            <p className="label pointer-events-none absolute bottom-4 left-5 text-smoke">{engraving ? "Your engraving, on the back · " : ""}Drag to turn{product.shape === "pump" || product.shape === "dropper" ? " · click the bottle for a drop" : ""}</p>
             <button
               type="button"
               aria-pressed={opened}
-              onClick={() => setOpened((o) => !o)}
+              onClick={() => {
+                setOpened((o) => !o);
+                setEngraveOpen(false);
+              }}
               className="btn btn-white absolute right-4 top-4 !px-5 !py-2.5"
             >
               {opened ? "Close the formula" : "Open the formula"}
@@ -67,7 +94,7 @@ export default function ProductDetail({ product }: { product: Product }) {
             role="tab"
             aria-selected={view === "3d"}
             onClick={() => setView("3d")}
-            className={`flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-[10px] border-[1.5px] bg-[#f9ebe1] text-xs font-medium transition-colors ${
+            className={`flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-[10px] border-[1.5px] bg-blush-2 text-xs font-medium transition-colors ${
               view === "3d" ? "border-ember text-ember" : "border-transparent text-ink hover:border-apricot"
             }`}
           >
@@ -93,7 +120,12 @@ export default function ProductDetail({ product }: { product: Product }) {
 
       <div className="md:pt-10">
         <Link href="/shop" className="label text-smoke hover:text-ink">← All formulas</Link>
-        <p className="label mt-8 text-smoke">{product.kind}</p>
+        <p className="label mt-8 flex items-center gap-3 text-smoke">
+          {product.kind}
+          <span className="rounded-full border border-ink/15 px-2.5 py-0.5 text-[11px]">
+            {rituals.length === 2 ? "Morning & evening" : rituals[0] === "AM" ? "Morning" : "Evening"}
+          </span>
+        </p>
         <h1 className="mt-3 font-display text-[clamp(2rem,4vw,3.2rem)] font-light leading-none tracking-tight">
           {product.name}
         </h1>
@@ -121,16 +153,84 @@ export default function ProductDetail({ product }: { product: Product }) {
           </div>
         </fieldset>
 
-        <div className="mt-8 flex items-center gap-6">
+        {/* Engraving atelier: type a name, pick foil or etched, and it appears on the back of the 3D glass. */}
+        <section className={`mt-8 rounded-[12px] border transition-colors ${engraveOpen ? "border-gold" : "border-ink/15"}`}>
+          <button
+            type="button"
+            aria-expanded={engraveOpen}
+            aria-controls={`${inputId}-panel`}
+            onClick={() => {
+              const next = !engraveOpen;
+              setEngraveOpen(next);
+              if (next) {
+                setView("3d");
+                setOpened(false);
+              }
+            }}
+            className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
+          >
+            <span>
+              <span className="block text-[15px] text-ink">Engrave it</span>
+              <span className="block text-sm text-smoke">
+                A name or initials on the back of the glass · +{formatPrice(ENGRAVING_PRICE)}
+              </span>
+            </span>
+            <span aria-hidden className={`atelier-plus ${engraveOpen ? "is-open" : ""}`} />
+          </button>
+          <div id={`${inputId}-panel`} hidden={!engraveOpen} className="border-t border-mist px-5 pb-5 pt-4">
+            <label htmlFor={inputId} className="label flex justify-between text-smoke">
+              <span>Your words</span>
+              <span className="tabular-nums">
+                {engraveText.length}/{ENGRAVING_MAX}
+              </span>
+            </label>
+            <input
+              id={inputId}
+              name="engraving"
+              type="text"
+              autoComplete="off"
+              spellCheck={false}
+              maxLength={ENGRAVING_MAX}
+              value={engraveText}
+              onChange={(e) => setEngraveText(cleanEngraving(e.target.value))}
+              placeholder="e.g. Amélie, or A·M"
+              className="mt-2 w-full rounded-full border border-ink/20 bg-transparent px-5 py-3 text-lg font-light tracking-[0.04em] text-ink outline-none placeholder:text-smoke focus:border-ink"
+            />
+            <fieldset className="mt-4">
+              <legend className="label text-smoke">Finish</legend>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                {ENGRAVING_STYLES.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    aria-pressed={engraveStyle === s.id}
+                    onClick={() => setEngraveStyle(s.id)}
+                    className={`rounded-[10px] border px-4 py-3 text-left transition-colors ${
+                      engraveStyle === s.id ? "border-ink" : "border-ink/15 hover:border-ink/50"
+                    }`}
+                  >
+                    <span className={`block text-sm ${s.id === "foil" ? "foil font-medium" : "text-ink"}`}>{s.label}</span>
+                    <span className="block text-xs text-smoke">{s.note}</span>
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+            <p className="mt-4 text-xs text-smoke">
+              Made to order, ships in 3–5 working days. Engraved pieces can only be returned if faulty.
+            </p>
+          </div>
+        </section>
+
+        <div className="mt-6 flex flex-wrap items-center gap-6">
           <button
             type="button"
             onClick={() => {
-              add(product.slug, variant.id);
+              add(product.slug, variant.id, engraving);
               setAdded(true);
             }}
             className="btn"
           >
-            Add to bag · {formatPrice(variant.price)}
+            Add to bag · {formatPrice(price)}
           </button>
           {added && (
             <Link href="/cart" role="status" className="text-sm underline underline-offset-4">

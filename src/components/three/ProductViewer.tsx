@@ -9,7 +9,7 @@ import { baseOffset, mouthY } from "./Bottle";
 import Formula from "./Formula";
 import { damp, speed } from "./motion";
 import Studio from "./Studio";
-import type { Product } from "@/data/products";
+import type { Engraving, Product } from "@/data/products";
 
 type Props = {
   product: Product;
@@ -18,19 +18,24 @@ type Props = {
   reducedMotion: boolean;
   /** Lift the closure and show the actives as droplets. */
   opened: boolean;
+  engraving?: Engraving;
+  /** Turn the back (where the engraving is) towards the viewer. */
+  showBack?: boolean;
+  /** Canvas background, so the scene follows the Day / Night theme. */
+  background?: string;
 };
 
-export default function ProductViewer({ product, color, quality, reducedMotion, opened }: Props) {
+export default function ProductViewer({ product, color, quality, reducedMotion, opened, engraving, showBack, background = "#f9ebe1" }: Props) {
   return (
     <SceneCanvas
       quality={quality}
       camera={{ position: [0, 0.3, 5.6], fov: 30 }}
       gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping }}
     >
-      <color attach="background" args={["#f9ebe1"]} />
+      <color attach="background" args={[background]} />
       <Studio />
       <pointLight position={[0, 1, -3]} color="#f7651a" intensity={20} distance={10} />
-      <OpenableFormula product={product} color={color} quality={quality} reducedMotion={reducedMotion} opened={opened} />
+      <OpenableFormula product={product} color={color} quality={quality} reducedMotion={reducedMotion} opened={opened} engraving={engraving} showBack={showBack} />
       <Sparkles count={quality === "high" ? 40 : 16} scale={[4, 3.5, 3]} size={2} speed={reducedMotion ? 0 : 0.2} opacity={0.5} color="#ffb48f" />
       <ContactShadows
         position={[0, -baseOffset(product.shape) - 0.02, 0]}
@@ -46,7 +51,7 @@ export default function ProductViewer({ product, color, quality, reducedMotion, 
         maxDistance={7.5}
         minPolarAngle={Math.PI / 4}
         maxPolarAngle={Math.PI / 1.8}
-        autoRotate={!reducedMotion && !opened}
+        autoRotate={!reducedMotion && !opened && !showBack}
         autoRotateSpeed={0.7}
       />
     </SceneCanvas>
@@ -54,7 +59,9 @@ export default function ProductViewer({ product, color, quality, reducedMotion, 
 }
 
 /** Eases the open state so the button toggle plays the same choreography as the scroll tour. */
-function OpenableFormula({ opened, quality, ...rest }: Props) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- background is for the canvas, not the bottle
+function OpenableFormula({ opened, quality, showBack, background: _bg, ...rest }: Props) {
+  const turn = useRef<THREE.Group>(null);
   const open = useRef(0);
   const press = useRef(0);
   const pressedAt = useRef(-10);
@@ -119,6 +126,15 @@ function OpenableFormula({ opened, quality, ...rest }: Props) {
       (puddle.current.material as THREE.MeshPhysicalMaterial).opacity = Math.max(0, 1 - Math.max(0, age - 1.2) / 1.2) * 0.9;
     }
 
+    // Turn the engraved back towards the camera (shortest way round), or home to the label.
+    if (turn.current) {
+      const cam = state.camera.position;
+      const goal = showBack ? Math.atan2(cam.x, cam.z) + Math.PI : 0;
+      const cur = turn.current.rotation.y;
+      const diff = Math.atan2(Math.sin(goal - cur), Math.cos(goal - cur));
+      turn.current.rotation.y = rest.reducedMotion ? cur + diff : damp(cur, cur + diff, speed.base, dt);
+    }
+
     open.current = rest.reducedMotion ? Number(opened) : damp(open.current, Number(opened), speed.slow, dt);
     // Step left and back a little when open so the droplets and their labels fit the frame.
     if (group.current) {
@@ -134,7 +150,9 @@ function OpenableFormula({ opened, quality, ...rest }: Props) {
           pending.current = true;
         }}
       >
-        <Formula {...rest} open={open} press={press} bubbles glass="mtm" lowQuality={quality === "low"} />
+        <group ref={turn}>
+          <Formula {...rest} open={open} press={press} bubbles glass="mtm" lowQuality={quality === "low"} />
+        </group>
       </group>
       <mesh ref={drop} visible={false}>
         <sphereGeometry args={[1, 24, 16]} />
