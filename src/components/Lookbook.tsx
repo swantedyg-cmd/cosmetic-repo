@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
+import { useSectionScroll } from "@/lib/useSectionScroll";
 import Image from "next/image";
 import Link from "next/link";
 import { editorial, productPhotos, type Photo } from "@/data/photos";
@@ -26,44 +27,46 @@ const SIZE: Record<Frame["size"], string> = {
 // A pinned strip of photographs that travels sideways as you scroll down.
 // Each picture also drifts inside its frame, so the strip reads in depth.
 export default function Lookbook() {
-  const section = useRef<HTMLElement>(null);
   const track = useRef<HTMLDivElement>(null);
+  // Cached on measure: how far the strip travels, and each frame's centre along it.
+  const layout = useRef({ wide: false, distance: 0, centres: [] as number[], imgs: [] as HTMLElement[] });
 
-  useEffect(() => {
-    const wide = matchMedia("(min-width: 768px)");
-    let id = 0;
-    const update = () => {
-      id = 0;
-      const el = section.current;
+  const section = useSectionScroll<HTMLElement>(
+    (p) => {
       const t = track.current;
-      if (!el || !t) return;
-      if (!wide.matches) {
+      const L = layout.current;
+      if (!t || !L.wide) return;
+      const x = -p * L.distance;
+      t.style.transform = `translate3d(${x}px, 0, 0)`;
+      // Each photo drifts inside its frame by where that frame sits on screen.
+      const vw = window.innerWidth;
+      for (let i = 0; i < L.imgs.length; i++) {
+        const centre = (L.centres[i] + x) / vw - 0.5;
+        L.imgs[i].style.transform = `translate3d(${centre * -12}%, 0, 0) scale(1.25)`;
+      }
+    },
+    () => {
+      const t = track.current;
+      if (!t) return;
+      const L = layout.current;
+      L.wide = matchMedia("(min-width: 768px)").matches;
+      if (!L.wide) {
         t.style.transform = "";
         return;
       }
-      const rect = el.getBoundingClientRect();
-      const travel = rect.height - window.innerHeight;
-      const p = Math.min(1, Math.max(0, -rect.top / travel));
-      const distance = t.scrollWidth - window.innerWidth;
-      t.style.transform = `translate3d(${-p * distance}px, 0, 0)`;
-      t.querySelectorAll<HTMLElement>("[data-drift]").forEach((img) => {
+      // Measure with the strip at rest so the positions are its own, not the scrolled ones.
+      const prev = t.style.transform;
+      t.style.transform = "";
+      L.distance = t.scrollWidth - window.innerWidth;
+      const base = t.getBoundingClientRect().left;
+      L.imgs = [...t.querySelectorAll<HTMLElement>("[data-drift]")];
+      L.centres = L.imgs.map((img) => {
         const r = img.parentElement!.getBoundingClientRect();
-        const centre = (r.left + r.width / 2) / window.innerWidth - 0.5;
-        img.style.transform = `translate3d(${centre * -12}%, 0, 0) scale(1.25)`;
+        return r.left - base + r.width / 2;
       });
-    };
-    const schedule = () => {
-      if (!id) id = requestAnimationFrame(update);
-    };
-    update();
-    window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
-    return () => {
-      window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
-      cancelAnimationFrame(id);
-    };
-  }, []);
+      t.style.transform = prev;
+    },
+  );
 
   return (
     <section ref={section} className="relative bg-blush md:h-[320svh]" aria-label="Lookbook">

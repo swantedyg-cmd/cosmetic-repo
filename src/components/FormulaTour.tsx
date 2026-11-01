@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { useSectionScroll } from "@/lib/useSectionScroll";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { featured, formatPrice } from "@/data/products";
@@ -13,30 +14,14 @@ const TourScene = dynamic(() => import("./three/TourScene"), { ssr: false });
 // each featured formula: the cap lifts and its actives rise out as droplets
 // sized by their real percentages, then it closes before the next one arrives.
 export default function FormulaTour() {
-  const section = useRef<HTMLElement>(null);
   const progress = useRef(0);
   const [stage, setStage] = useState(0);
+  const section = useSectionScroll<HTMLElement>((p) => {
+    progress.current = p;
+    setStage(Math.min(featured.length - 1, Math.floor(p * featured.length)));
+  });
   const { quality, reducedMotion } = useDevice();
   const [stageRef, inView] = useInView<HTMLDivElement>();
-
-  useEffect(() => {
-    const onScroll = () => {
-      const el = section.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const travel = rect.height - window.innerHeight;
-      const p = Math.min(1, Math.max(0, -rect.top / travel));
-      progress.current = p;
-      setStage(Math.min(featured.length - 1, Math.floor(p * featured.length)));
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
-  }, []);
 
   return (
     <section ref={section} style={{ height: `${featured.length * 100}svh` }} className="relative">

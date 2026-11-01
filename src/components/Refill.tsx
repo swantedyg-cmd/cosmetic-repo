@@ -20,7 +20,7 @@ export default function Refill() {
       <div className="grid items-center gap-12 rounded-[15px] bg-blush p-6 md:grid-cols-[1fr_1.1fr] md:gap-16 md:p-14">
         {/* A pod drops into the jar and the level rises, on a slow loop. */}
         <Reveal className="relative mx-auto aspect-square w-full max-w-[380px]" >
-          <div className="refill-scene" aria-hidden>
+          <div data-loop className="refill-scene" aria-hidden>
             <span className="refill-pod" />
             <span className="refill-lid" />
             <span className="refill-jar">

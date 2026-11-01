@@ -28,15 +28,17 @@ export default function Cursor() {
       target.y = e.clientY;
       const el = (e.target as Element | null)?.closest?.("[data-cursor]");
       setLabel(el ? el.getAttribute("data-cursor") : null);
+      if (!id) id = requestAnimationFrame(tick);
     };
+    // Runs only while the dot is catching up; idle, it costs nothing per frame.
     const tick = () => {
       pos.x += (target.x - pos.x) * 0.2;
       pos.y += (target.y - pos.y) * 0.2;
       if (dot.current) dot.current.style.transform = `translate3d(${pos.x}px, ${pos.y}px, 0)`;
-      id = requestAnimationFrame(tick);
+      const settled = Math.abs(target.x - pos.x) < 0.1 && Math.abs(target.y - pos.y) < 0.1;
+      id = settled ? 0 : requestAnimationFrame(tick);
     };
     window.addEventListener("pointermove", onMove, { passive: true });
-    id = requestAnimationFrame(tick);
     return () => {
       window.removeEventListener("pointermove", onMove);
       cancelAnimationFrame(id);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useSectionScroll } from "@/lib/useSectionScroll";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { formatPrice, getProduct } from "@/data/products";
@@ -20,31 +21,16 @@ const CHAPTERS = [0, 0.2, 0.55];
 // A pinned 3D gift box. Scrolling unties the ribbon, lifts the lid and raises the
 // evening ritual out of its velvet bed; the last chapter adds the whole set to the bag.
 export default function Coffret() {
-  const section = useRef<HTMLElement>(null);
   const progress = useRef(0);
   const [chapter, setChapter] = useState(0);
+  const section = useSectionScroll<HTMLElement>((p) => {
+    progress.current = p;
+    setChapter(CHAPTERS.findLastIndex((c) => p >= c));
+  });
   const [added, setAdded] = useState(false);
   const { add } = useCart();
   const { quality, reducedMotion } = useDevice();
   const [stageRef, inView] = useInView<HTMLDivElement>();
-
-  useEffect(() => {
-    const onScroll = () => {
-      const el = section.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const p = Math.min(1, Math.max(0, -rect.top / (rect.height - window.innerHeight)));
-      progress.current = p;
-      setChapter(CHAPTERS.findLastIndex((c) => p >= c));
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
-  }, []);
 
   useEffect(() => {
     if (!added) return;

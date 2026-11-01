@@ -192,7 +192,7 @@ function Station({
           document.body.style.cursor = "";
         }}
       >
-        <Bottle product={product} glass={quality === "high" ? "native" : "simple"} lowQuality={quality === "low"} open={open} />
+        <Bottle product={product} glass="simple" lowQuality={quality === "low"} open={open} />
       </group>
     </group>
   );

@@ -10,7 +10,7 @@ export default function LayerStack({ steps, className = "" }: { steps: Product[]
   const bases = steps.map((_, i) => steps.slice(0, i).reduce((z, p) => z + THICKNESS[p.shape] + 6, 0));
   return (
     <div className={`layer-stack ${className}`} aria-hidden>
-      <div className="layer-stack-plane">
+      <div data-loop className="layer-stack-plane">
         <span className="layer-stack-skin">skin</span>
         {steps.map((p, i) => {
           const depth = THICKNESS[p.shape];

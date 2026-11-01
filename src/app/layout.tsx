@@ -7,6 +7,7 @@ import EmailModal from "@/components/EmailModal";
 import Intro, { introScript } from "@/components/Intro";
 import Cursor from "@/components/Cursor";
 import Atmosphere from "@/components/Atmosphere";
+import PauseOffscreen from "@/components/PauseOffscreen";
 import SmoothScroll from "@/components/SmoothScroll";
 import { CartProvider } from "@/lib/cart";
 import { themeScript } from "@/lib/themeScript";
@@ -56,6 +57,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <SmoothScroll />
         <Cursor />
         <Atmosphere />
+        <PauseOffscreen />
         <CartProvider>
           <Header />
           <main id="main" tabIndex={-1} className="relative z-[1] flex-1 outline-none">{children}</main>

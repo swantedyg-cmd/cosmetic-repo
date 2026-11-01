@@ -382,7 +382,7 @@ function Riser({
 
   return (
     <group ref={g} position={[slot, rest, 0]} scale={BOTTLE_SCALE}>
-      <Bottle product={product} glass={quality === "high" ? "native" : "simple"} lowQuality={quality === "low"} open={open} />
+      <Bottle product={product} glass="simple" lowQuality={quality === "low"} open={open} />
     </group>
   );
 }

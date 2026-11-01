@@ -40,7 +40,7 @@ export default function Marquee() {
     );
 
   return (
-    <section aria-label="Every active in the range" className="wave-band overflow-hidden border-y border-mist py-9 md:py-11">
+    <section data-loop aria-label="Every active in the range" className="wave-band overflow-hidden border-y border-mist py-9 md:py-11">
       <div className="marquee items-center">
         {run(0)}
         <span aria-hidden className="contents">{run(1)}</span>

@@ -242,31 +242,25 @@ h3 {
 /* Ingredient band: soft-faded edges, a 3D swell rolling along the line, and a slow
    sheen across each figure. */
 .wave-band {
-  perspective: 900px;
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
   mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
 }
 .wave-band .marquee {
   animation-duration: 70s;
-  transform-style: preserve-3d;
 }
 .wave-cell {
   animation: wave-swell 6s ease-in-out infinite;
   animation-delay: var(--d, 0s);
   transform-origin: 50% 50%;
 }
+/* A flat rise and fall: reads the same as the old 3D tilt head-on, at a fraction of the cost. */
 @keyframes wave-swell {
-  0%, 100% { transform: translate3d(0, -9px, 18px) rotateX(16deg); }
-  50% { transform: translate3d(0, 9px, -18px) rotateX(-16deg); }
+  0%, 100% { transform: translate3d(0, -10px, 0); }
+  50% { transform: translate3d(0, 10px, 0); }
 }
+/* Plain ink: the old moving sheen repainted every figure on every frame. */
 .wave-figure {
-  background: linear-gradient(100deg, var(--ink) 40%, var(--ember) 50%, var(--ink) 60%);
-  background-size: 300% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: wave-sheen 6s ease-in-out infinite;
-  animation-delay: var(--d, 0s);
+  color: var(--ink);
 }
 @keyframes wave-sheen {
   0% { background-position: 100% 0; }
@@ -467,8 +461,11 @@ html.lenis body {
 .refill-level {
   position: absolute;
   inset: auto 8px 8px;
-  height: 20%;
+  height: 78%;
   border-radius: 10px 10px 20px 20px;
+  /* Rises with a transform, not height, so it never triggers layout. */
+  transform-origin: 50% 100%;
+  transform: scaleY(0.256);
   background: linear-gradient(#ffffff, #efe4da);
   box-shadow: inset 0 6px 10px rgb(255 255 255 / 0.9), 0 -1px 0 rgb(13 23 23 / 0.08);
   animation: refill-level 6s cubic-bezier(0.77, 0, 0.18, 1) infinite;
@@ -518,9 +515,9 @@ html.lenis body {
   62%, 100% { transform: translateY(160%) scaleY(0.4); opacity: 0; }
 }
 @keyframes refill-level {
-  0%, 50% { height: 20%; }
-  70%, 90% { height: 78%; }
-  100% { height: 20%; }
+  0%, 50% { transform: scaleY(0.256); }
+  70%, 90% { transform: scaleY(1); }
+  100% { transform: scaleY(0.256); }
 }
 
 /* Mobile menu: a white sheet that unrolls under the header bar. */
@@ -640,7 +637,8 @@ html.lenis body {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent !important;
-  animation: foil 7s ease-in-out infinite alternate;
+  /* Static: an endlessly moving text gradient repaints the text every frame. */
+  background-position: 35% 50%;
   padding-bottom: 0.06em;
 }
 @keyframes foil {
@@ -765,4 +763,10 @@ html.lenis body {
 }
 @media (prefers-reduced-motion: reduce) {
   .origin-card { animation: none; }
+}
+
+/* Looping animations wait until their section is on screen (see PauseOffscreen). */
+[data-loop]:not([data-visible]),
+[data-loop]:not([data-visible]) * {
+  animation-play-state: paused !important;
 }

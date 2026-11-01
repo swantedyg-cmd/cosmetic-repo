@@ -26,7 +26,9 @@ type Props = Omit<CanvasProps, "dpr" | "frameloop"> & {
 };
 
 export default function SceneCanvas({ quality, active = true, children, onCreated, ...props }: Props) {
-  const ceiling = quality === "high" ? 1.5 : 1.25;
+  // 1.25x is the sweet spot on laptop GPUs: sharp on retina, ~30% fewer pixels than 1.5x
+  // for the glass shaders to fill on full-screen scenes.
+  const ceiling = quality === "high" ? 1.25 : 1.15;
   const [maxDpr, setMaxDpr] = useState(ceiling);
   const [tier, setTier] = useState<Tier>("full");
 
@@ -34,6 +36,10 @@ export default function SceneCanvas({ quality, active = true, children, onCreate
     <Canvas
       {...props}
       frameloop={active ? "always" : "demand"}
+      // Don't re-measure the canvas on scroll: its offset changing used to wake every
+      // scene on the page (even off screen) for a full redraw on each scroll step.
+      // Pointer picking uses offsetX/Y, so the canvas position isn't needed.
+      resize={{ scroll: false, debounce: { scroll: 0, resize: 120 } }}
       // A range, so 1x screens never render above their native resolution.
       dpr={[1, maxDpr]}
       onCreated={(state) => {
