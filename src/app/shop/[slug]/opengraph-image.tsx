@@ -34,10 +34,8 @@ export default async function Image({ params }: { params: Promise<{ slug: string
           </div>
           <div style={{ display: "flex", flexDirection: "column" }}>
             <div style={{ fontSize: 54, fontWeight: 200, letterSpacing: -2, color: "#0d1717" }}>{p.name}</div>
-            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 10, fontSize: 24, color: "#6b6b6b" }}>
-              <span>{p.tagline.length > 52 ? `${p.tagline.slice(0, 50)}…` : p.tagline}</span>
-              <span style={{ color: "#0d1717" }}>{`from ${formatPrice(p.variants[0].price)}`}</span>
-            </div>
+            <div style={{ display: "flex", marginTop: 10, fontSize: 24, color: "#6b6b6b" }}>{p.tagline}</div>
+            <div style={{ display: "flex", marginTop: 14, fontSize: 24, color: "#0d1717" }}>{`from ${formatPrice(p.variants[0].price)}`}</div>
           </div>
         </div>
       </div>
