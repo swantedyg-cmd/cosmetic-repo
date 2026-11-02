@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { mountInTurn } from "./warm";
+import { afterFirstScene, mountInTurn } from "./warm";
 
 /**
  * [ref, inView, near]
@@ -37,8 +37,13 @@ export function useInView<T extends Element>({ lazy = false }: { lazy?: boolean 
       },
       { rootMargin: "150% 0px" },
     );
-    nearIo.observe(el);
-    if (lazy) mountInTurn(build);
+    if (lazy) {
+      // Even a scene right below the fold waits for the hero to be ready first.
+      afterFirstScene().then(() => live && nearIo.observe(el));
+      mountInTurn(build);
+    } else {
+      nearIo.observe(el);
+    }
     return () => {
       live = false;
       io.disconnect();

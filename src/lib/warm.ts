@@ -52,6 +52,18 @@ async function whenQuiet() {
   }
 }
 
+let firstScene: Promise<void> | null = null;
+
+/**
+ * Resolves once the first scene on the page (the hero, or a product viewer) is ready.
+ * Nothing else builds before then: two scenes compiling at once on load made each wait
+ * on the other in the GPU queue (a 3 s freeze instead of 1 s).
+ */
+export function afterFirstScene() {
+  firstScene ??= nextSceneReady(6000);
+  return firstScene;
+}
+
 let tail: Promise<void> | null = null;
 
 /**
@@ -60,7 +72,7 @@ let tail: Promise<void> | null = null;
  */
 export function mountInTurn(mount: () => boolean) {
   // The first scene on the page (the hero, or a product viewer) goes before the queue starts.
-  tail ??= nextSceneReady(6000);
+  tail ??= afterFirstScene();
   tail = tail.then(async () => {
     await whenQuiet();
     if (mount()) await nextSceneReady(8000);
