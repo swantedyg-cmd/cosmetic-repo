@@ -30,7 +30,7 @@ export default function Coffret() {
   const [added, setAdded] = useState(false);
   const { add } = useCart();
   const { quality, reducedMotion } = useDevice();
-  const [stageRef, inView] = useInView<HTMLDivElement>();
+  const [stageRef, inView, near] = useInView<HTMLDivElement>({ lazy: true });
 
   useEffect(() => {
     if (!added) return;
@@ -47,7 +47,7 @@ export default function Coffret() {
     <section ref={section} className="keep-day coffret relative h-[320svh] text-canvas" aria-labelledby="coffret-title">
       <div ref={stageRef} className="sticky top-0 h-svh overflow-hidden">
         <div className="absolute inset-0" aria-hidden>
-          <CoffretScene products={SET} progress={progress} quality={quality} reducedMotion={reducedMotion} active={inView} />
+          {near && <CoffretScene products={SET} progress={progress} quality={quality} reducedMotion={reducedMotion} active={inView} />}
         </div>
 
         <Chapter visible={chapter === 0}>

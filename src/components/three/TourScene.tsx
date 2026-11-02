@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import SceneCanvas from "./SceneCanvas";
 import { Text } from "@react-three/drei";
@@ -10,6 +10,7 @@ import { damp, speed, stageOpen } from "./motion";
 import Studio from "./Studio";
 import type { Product } from "@/data/products";
 import { sceneColors, useTheme } from "@/lib/theme";
+import { onNextSceneReady } from "@/lib/warm";
 
 const FONT = "/fonts/onest-200.woff";
 
@@ -101,6 +102,7 @@ function Scene({ products, stage, progress, quality, reducedMotion }: Props) {
           lift={lift}
         />
       ))}
+      <WarmShapes products={products} shown={shown.slug} quality={quality} />
       <group ref={rig}>
         <group ref={bottle}>
           <Formula
@@ -161,5 +163,34 @@ function Figure({
     >
       {text}
     </Text>
+  );
+}
+
+const CLOSED = { current: 0 };
+
+// Only one bottle is in the scene at a time, so the others' shaders would compile the
+// moment the tour swaps to them — a visible hitch mid-scroll. They're built hidden while
+// the scene warms up (SceneCanvas compiles hidden objects too), then dropped.
+function WarmShapes({ products, shown, quality }: { products: Product[]; shown: string; quality: Props["quality"] }) {
+  const [warming, setWarming] = useState(true);
+  useEffect(() => onNextSceneReady(() => setWarming(false)), []);
+  if (!warming) return null;
+  return (
+    <group visible={false}>
+      {products
+        .filter((p) => p.slug !== shown)
+        .map((p) => (
+          <Formula
+            key={p.slug}
+            product={p}
+            open={CLOSED}
+            labels={false}
+            bubbles={quality === "high"}
+            glass={quality === "high" ? "mtm" : "native"}
+            lowQuality={quality === "low"}
+            reducedMotion
+          />
+        ))}
+    </group>
   );
 }

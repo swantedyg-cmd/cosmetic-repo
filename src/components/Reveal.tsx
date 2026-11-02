@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { onScroll as subscribe, scroll } from "@/lib/scroll";
 
 type Props = {
   children: React.ReactNode;
@@ -16,6 +17,7 @@ const pending = new Set<Element>();
 let observer: IntersectionObserver | null = null;
 let lastY = 0;
 let raf = 0;
+let unsubscribe: (() => void) | null = null;
 
 function show(el: Element) {
   el.classList.add("is-in");
@@ -25,9 +27,8 @@ function show(el: Element) {
 // Safety net for jumps (End key, anchor links, restored scroll), where the observer can
 // miss elements that skip straight past the viewport: reveal anything on or above screen.
 // Ordinary scrolling never moves this far in one event, so it costs nothing then.
-function onScroll() {
-  const y = window.scrollY;
-  const jumped = Math.abs(y - lastY) > window.innerHeight;
+function onScroll(y: number) {
+  const jumped = Math.abs(y - lastY) > scroll.vh;
   lastY = y;
   if (!jumped || raf) return;
   raf = requestAnimationFrame(() => {
@@ -46,7 +47,7 @@ function watch(el: Element) {
     );
     // From 0, so a restored scroll position on reload counts as a jump.
     lastY = 0;
-    window.addEventListener("scroll", onScroll, { passive: true });
+    unsubscribe = subscribe(onScroll);
   }
   pending.add(el);
   observer.observe(el);
@@ -58,7 +59,8 @@ function unwatch(el: Element) {
   if (!pending.size && observer) {
     observer.disconnect();
     observer = null;
-    window.removeEventListener("scroll", onScroll);
+    unsubscribe?.();
+    unsubscribe = null;
   }
 }
 

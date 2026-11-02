@@ -157,10 +157,12 @@ h3 {
   color: var(--canvas);
 }
 
-/* Entrance: fade up. Delay is set inline per element. */
+/* Entrance: fade up. Delay is set inline per element.
+   Entrances fill "backwards", not "forwards"/"both": a finished transform animation that
+   keeps filling holds its own compositor layer forever, and every such layer made each
+   painted frame more expensive while scrolling. */
 .reveal {
-  opacity: 0;
-  animation: reveal 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: reveal 1s cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
 
 /* Entrance: each headline line slides up out of a mask. */
@@ -171,8 +173,7 @@ h3 {
 }
 .reveal-line > span {
   display: block;
-  transform: translateY(105%);
-  animation: reveal-line 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: line-up 1.2s cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
 
 }
@@ -180,6 +181,10 @@ h3 {
 @keyframes reveal {
   from { opacity: 0; transform: translateY(14px); }
   to { opacity: 1; transform: none; }
+}
+
+@keyframes line-up {
+  from { transform: translateY(105%); }
 }
 
 @keyframes reveal-line {
@@ -351,8 +356,8 @@ html.lenis body {
 }
 
 /* ---------- Routine finder ---------- */
-.routine-question { animation: reveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
-.routine-option { animation: reveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.routine-question { animation: reveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+.routine-option { animation: reveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
 
 /* Layer stack: the routine as glass slabs in isometric CSS 3D. */
 .layer-stack {
@@ -390,7 +395,7 @@ html.lenis body {
   background: color-mix(in srgb, var(--tint) 62%, rgb(255 255 255 / 0.35));
   border: 1px solid rgb(255 255 255 / 0.75);
   box-shadow: inset 0 0 24px rgb(255 255 255 / 0.45);
-  animation: slab-drop 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: slab-drop 0.9s cubic-bezier(0.22, 1, 0.36, 1) backwards;
   animation-delay: calc(var(--i) * 220ms + 150ms);
 }
 /* Bottom face, one slab-thickness down, so each layer reads as a solid. */
@@ -420,8 +425,8 @@ html.lenis body {
 
 /* ---------- Reviews / index rows ---------- */
 .review-card,
-.ingredient-row { animation: reveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
-.range-dot { animation: dot-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.ingredient-row { animation: reveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+.range-dot { animation: dot-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
 @keyframes dot-in {
   from { transform: translate(-50%, -50%) scale(0); }
 }
@@ -441,7 +446,7 @@ html.lenis body {
 .faq-icon::after { transform: rotate(90deg); }
 .faq[open] .faq-icon::after { transform: rotate(0deg); }
 .faq summary::-webkit-details-marker { display: none; }
-.faq[open] > p { animation: reveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.faq[open] > p { animation: reveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
 
 /* ---------- Refill: a pod drops into the jar and the level rises ---------- */
 .refill-scene { position: absolute; inset: 0; }
@@ -556,7 +561,7 @@ html.lenis body {
 
 /* Vitrine caption: each product's details fade up as it turns to the front. */
 .vitrine-caption {
-  animation: vitrine-caption 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: vitrine-caption 0.9s cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
 @keyframes vitrine-caption {
   from { opacity: 0; transform: translateY(18px); filter: blur(6px); }
@@ -600,11 +605,11 @@ html.lenis body {
 
 /* Shop grid: a filtered set fades up together. Quick add draws its tick on success. */
 .shop-item {
-  animation: reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
 .quick-add-check {
   stroke-dasharray: 16;
-  animation: quick-add-check 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: quick-add-check 0.4s cubic-bezier(0.22, 1, 0.36, 1) backwards;
 }
 @keyframes quick-add-check {
   from { stroke-dashoffset: 16; }
@@ -759,7 +764,7 @@ html.lenis body {
 
 /* ---------- Origins globe ---------- */
 .origin-card {
-  animation: reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
 @media (prefers-reduced-motion: reduce) {
   .origin-card { animation: none; }
@@ -769,4 +774,10 @@ html.lenis body {
 [data-loop]:not([data-visible]),
 [data-loop]:not([data-visible]) * {
   animation-play-state: paused !important;
+}
+/* The ingredient wave is ~80 animated cells, and even paused each one keeps a compositor
+   layer. Off screen they drop the animation entirely (and the layers with it). */
+.wave-band:not([data-visible]) .marquee,
+.wave-band:not([data-visible]) .wave-cell {
+  animation: none !important;
 }

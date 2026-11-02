@@ -6,6 +6,7 @@ import Link from "next/link";
 import { brandStat, products } from "@/data/products";
 import { useDevice } from "@/lib/useDevice";
 import { useInView } from "@/lib/useInView";
+import { onScroll, scroll, scrollY } from "@/lib/scroll";
 
 const HeroStudio = dynamic(() => import("./three/HeroStudio"), {
   ssr: false,
@@ -19,12 +20,11 @@ export default function Hero() {
 
   // How far the hero has scrolled out, read by the 3D set every frame (no re-renders).
   useEffect(() => {
-    const onScroll = () => {
-      exit.current = Math.min(1, Math.max(0, window.scrollY / window.innerHeight));
+    const update = (y: number) => {
+      exit.current = Math.min(1, Math.max(0, y / (scroll.vh || 1)));
     };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    update(scrollY());
+    return onScroll(update);
   }, []);
 
   return (

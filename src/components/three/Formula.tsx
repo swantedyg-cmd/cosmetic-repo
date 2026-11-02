@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import * as THREE from "three";
@@ -95,6 +95,10 @@ function Droplet({
   const mesh = useRef<THREE.Mesh>(null);
   const tag = useRef<HTMLDivElement>(null);
   const smooth = useRef(0);
+  // The HTML label is only mounted while its drop is out: drei moves an Html element
+  // every frame the bottle sways, which repaints the page even when the label is invisible.
+  const [tagMounted, setTagMounted] = useState(false);
+  const tagWanted = useRef(false);
 
   useFrame((state, dt) => {
     if (!mesh.current) return;
@@ -103,6 +107,11 @@ function Droplet({
     const t = ease.outBack(span(smooth.current, 0.1 + index * 0.18, 0.62 + index * 0.18));
     const shown = t > 0.002;
     mesh.current.visible = shown;
+    const wantTag = label && t > 0.5;
+    if (wantTag !== tagWanted.current) {
+      tagWanted.current = wantTag;
+      setTagMounted(wantTag);
+    }
     if (!shown) {
       if (tag.current) tag.current.style.opacity = "0";
       return;
@@ -138,7 +147,7 @@ function Droplet({
         clearcoatRoughness={0.04}
         envMapIntensity={1.2}
       />
-      {label && (
+      {label && tagMounted && (
         <Html position={[1.35, 0, 0]} center={false} zIndexRange={[10, 0]} style={{ pointerEvents: "none" }}>
           <div ref={tag} className="formula-tag" style={{ opacity: 0 }}>
             <span className="formula-tag-value">{drop.percent}%</span>

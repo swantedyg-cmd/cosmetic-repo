@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { onScroll, scrollY } from "./scroll";
 
 // Scroll progress through a tall pinned section, without layout reads on scroll.
 // The section's position is measured once (and again when anything resizes); each
-// scroll frame then works from window.scrollY alone. Reading getBoundingClientRect
+// scroll frame then works from the shared scroll position alone (lib/scroll.ts). Reading getBoundingClientRect
 // on every scroll forced the browser to redo layout each frame, which was most of
 // the scroll jank in the pinned sections.
 
@@ -26,12 +27,9 @@ export function useSectionScroll<T extends HTMLElement>(
     const el = ref.current;
     if (!el) return;
     const geo: Geometry = { top: 0, height: 0, viewport: 0 };
-    let frame = 0;
-
-    const emit = () => {
-      frame = 0;
+    const emit = (y = scrollY()) => {
       const travel = geo.height - geo.viewport;
-      const p = travel > 0 ? Math.min(1, Math.max(0, (window.scrollY - geo.top) / travel)) : 0;
+      const p = travel > 0 ? Math.min(1, Math.max(0, (y - geo.top) / travel)) : 0;
       cb.current(p, geo);
     };
     const measure = () => {
@@ -42,22 +40,19 @@ export function useSectionScroll<T extends HTMLElement>(
       measureCb.current?.(geo);
       emit();
     };
-    // One update per frame however many scroll events arrive.
-    const onScroll = () => {
-      if (!frame) frame = requestAnimationFrame(emit);
-    };
 
     measure();
     // Content above the section can change height (images, fonts, reveals), which moves it.
     const ro = new ResizeObserver(() => measure());
     ro.observe(document.body);
     ro.observe(el);
-    window.addEventListener("scroll", onScroll, { passive: true });
+    // Lenis publishes once per frame, inside its own animation frame, so the section
+    // moves in the same frame as the page (no extra frame of delay).
+    const unsubscribe = onScroll(emit);
     window.addEventListener("resize", measure);
     return () => {
-      cancelAnimationFrame(frame);
+      unsubscribe();
       ro.disconnect();
-      window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", measure);
     };
   }, []);

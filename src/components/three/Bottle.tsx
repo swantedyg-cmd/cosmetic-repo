@@ -277,8 +277,9 @@ function Glass({ points, mode, lowQuality }: { points: [number, number][]; mode:
     <mesh geometry={geo}>
       {mode === "mtm" && (
         <MeshTransmissionMaterial
-          samples={lowQuality ? 3 : 6}
-          resolution={lowQuality ? 256 : 512}
+          // 4 samples at 384px reads the same as 6 at 512 behind a moving bottle, for about half the work.
+          samples={lowQuality ? 3 : 4}
+          resolution={lowQuality ? 256 : 384}
           thickness={0.35}
           roughness={0.02}
           ior={1.5}

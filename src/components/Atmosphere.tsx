@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { scrollY } from "@/lib/scroll";
 
 // Background atmosphere: a few warm motes drifting behind the page, like dust in a
 // light beam. Three depth layers — far ones small, sharp-ish and slow; near ones large,
@@ -104,7 +105,7 @@ export default function Atmosphere() {
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
       const t = now / 1000;
-      const scroll = window.scrollY;
+      const scroll = scrollY();
       ctx.clearRect(0, 0, w, h);
       const pad = 40;
 

@@ -24,7 +24,7 @@ const AUTO_TURN = 6;
 export default function Vitrine() {
   const router = useRouter();
   const { quality, reducedMotion } = useDevice();
-  const [stageRef, inView] = useInView<HTMLDivElement>();
+  const [stageRef, inView, near] = useInView<HTMLDivElement>({ lazy: true });
   const [turn, setTurn] = useState(0);
   const [touched, setTouched] = useState(false);
   const [hovering, setHovering] = useState(false);
@@ -92,7 +92,8 @@ export default function Vitrine() {
         onPointerLeave={() => setHovering(false)}
       >
         <div className="absolute inset-0 cursor-grab touch-pan-y active:cursor-grabbing" onPointerDown={onPointerDown} aria-hidden>
-          <VitrineScene
+          {near && (
+            <VitrineScene
             products={products}
             turn={turn}
             drag={drag}
@@ -101,6 +102,7 @@ export default function Vitrine() {
             active={inView}
             onPick={pick}
           />
+          )}
         </div>
 
         <div className="pointer-events-none absolute inset-x-0 top-0 mx-auto max-w-[1280px] px-5 pt-16 md:px-10 md:pt-20">

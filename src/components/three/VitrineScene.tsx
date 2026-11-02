@@ -3,7 +3,8 @@
 import { useRef, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import SceneCanvas, { useTier } from "./SceneCanvas";
-import { Environment, Lightformer, MeshReflectorMaterial, Sparkles } from "@react-three/drei";
+import { Environment, Lightformer, Sparkles } from "@react-three/drei";
+import { MeshReflectorMaterial } from "./Reflector";
 import * as THREE from "three";
 import Bottle, { baseOffset } from "./Bottle";
 import { damp, speed } from "./motion";
@@ -210,6 +211,7 @@ function Floor({ quality }: { quality: "high" | "low" }) {
       {quality === "high" && tier === "full" ? (
         <MeshReflectorMaterial
           resolution={256}
+          every={2}
           blur={[300, 90]}
           mixBlur={1}
           mixStrength={1.6}

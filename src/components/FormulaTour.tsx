@@ -21,13 +21,14 @@ export default function FormulaTour() {
     setStage(Math.min(featured.length - 1, Math.floor(p * featured.length)));
   });
   const { quality, reducedMotion } = useDevice();
-  const [stageRef, inView] = useInView<HTMLDivElement>();
+  const [stageRef, inView, near] = useInView<HTMLDivElement>({ lazy: true });
 
   return (
     <section ref={section} style={{ height: `${featured.length * 100}svh` }} className="relative">
       <div ref={stageRef} className="sticky top-0 h-svh overflow-hidden">
         <div className="absolute inset-0" aria-hidden>
-          <TourScene
+          {near && (
+            <TourScene
             active={inView}
             products={featured}
             stage={stage}
@@ -35,6 +36,7 @@ export default function FormulaTour() {
             quality={quality}
             reducedMotion={reducedMotion}
           />
+          )}
         </div>
 
         <p className="pointer-events-none absolute left-5 top-28 text-sm text-smoke md:left-10 lg:left-16">
