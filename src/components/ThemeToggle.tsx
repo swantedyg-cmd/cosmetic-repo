@@ -1,6 +1,7 @@
 "use client";
 
 import { setTheme, useTheme } from "@/lib/theme";
+import { useI18n } from "@/i18n/client";
 
 /**
  * Day / Night switch: a small sun that sets into a crescent. The pill slides
@@ -9,13 +10,14 @@ import { setTheme, useTheme } from "@/lib/theme";
 export default function ThemeToggle({ className = "" }: { className?: string }) {
   const theme = useTheme();
   const night = theme === "night";
+  const { t } = useI18n();
   return (
     <button
       type="button"
       role="switch"
       aria-checked={night}
-      aria-label="Night ritual"
-      title={night ? "Switch to the morning ritual" : "Switch to the evening ritual"}
+      aria-label={t.theme.label}
+      title={night ? t.theme.toDay : t.theme.toNight}
       onClick={() => setTheme(night ? "day" : "night")}
       className={`theme-toggle ${night ? "is-night" : ""} ${className}`}
     >
@@ -31,7 +33,7 @@ export default function ThemeToggle({ className = "" }: { className?: string }) 
         </span>
       </span>
       <span className="theme-toggle-text" aria-hidden>
-        {night ? "Night" : "Day"}
+        {night ? t.theme.night : t.theme.day}
       </span>
     </button>
   );

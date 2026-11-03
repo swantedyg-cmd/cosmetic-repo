@@ -3,14 +3,14 @@
 import { useEffect, useId, useState } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/i18n/Link";
+import { useI18n } from "@/i18n/client";
 import { productPhotos } from "@/data/photos";
 import {
   ENGRAVING_MAX,
   ENGRAVING_PRICE,
   ENGRAVING_STYLES,
   cleanEngraving,
-  formatPrice,
   ritualOf,
   type EngravingStyle,
   type Product,
@@ -25,8 +25,12 @@ const ProductViewer = dynamic(() => import("./three/ProductViewer"), {
   loading: () => <div className="h-full w-full animate-pulse bg-blush-2" />,
 });
 
-export default function ProductDetail({ product }: { product: Product }) {
-  const [variant, setVariant] = useState(product.variants[0]);
+export default function ProductDetail({ product: base }: { product: Product }) {
+  const i = useI18n();
+  const { t } = i;
+  const product = i.product(base);
+  const [variantId, setVariantId] = useState(product.variants[0].id);
+  const variant = product.variants.find((v) => v.id === variantId) ?? product.variants[0];
   const [added, setAdded] = useState(false);
   const [view, setView] = useState<"3d" | number>("3d");
   const [opened, setOpened] = useState(false);
@@ -60,7 +64,11 @@ export default function ProductDetail({ product }: { product: Product }) {
               showBack={!!engraving}
               background={sceneColors[theme].viewer}
             />
-            <p className="label pointer-events-none absolute bottom-4 left-5 text-smoke">{engraving ? "Your engraving, on the back · " : ""}Drag to turn{product.shape === "pump" || product.shape === "dropper" ? " · click the bottle for a drop" : ""}</p>
+            <p className="label pointer-events-none absolute bottom-4 start-5 text-smoke">
+              {engraving ? t.product.engravingOnBack : ""}
+              {t.product.dragToTurn}
+              {product.shape === "pump" || product.shape === "dropper" ? t.product.clickForDrop : ""}
+            </p>
             <button
               type="button"
               aria-pressed={opened}
@@ -68,27 +76,27 @@ export default function ProductDetail({ product }: { product: Product }) {
                 setOpened((o) => !o);
                 setEngraveOpen(false);
               }}
-              className="btn btn-white absolute right-4 top-4 !px-5 !py-2.5"
+              className="btn btn-white absolute end-4 top-4 !px-5 !py-2.5"
             >
-              {opened ? "Close the formula" : "Open the formula"}
+              {opened ? t.product.close : t.product.open}
             </button>
           </div>
-          {photos.map((ph, i) => (
+          {photos.map((ph, n) => (
             <Image
               key={ph.src}
               src={ph.src}
-              alt={ph.alt}
+              alt={i.alt(ph)}
               fill
-              priority={i === 0}
+              priority={n === 0}
               sizes="(min-width: 768px) 55vw, 100vw"
               className={`object-cover transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-                view === i ? "scale-100 opacity-100" : "pointer-events-none scale-105 opacity-0"
+                view === n ? "scale-100 opacity-100" : "pointer-events-none scale-105 opacity-0"
               }`}
             />
           ))}
         </div>
         {/* Media switcher: the live 3D bottle first, then the photographs. */}
-        <div className="mt-3 flex gap-2" role="tablist" aria-label="Product media">
+        <div className="mt-3 flex gap-2" role="tablist" aria-label={t.product.media}>
           <button
             type="button"
             role="tab"
@@ -100,16 +108,16 @@ export default function ProductDetail({ product }: { product: Product }) {
           >
             3D
           </button>
-          {photos.map((ph, i) => (
+          {photos.map((ph, n) => (
             <button
               key={ph.src}
               type="button"
               role="tab"
-              aria-selected={view === i}
-              aria-label={ph.alt}
-              onClick={() => setView(i)}
+              aria-selected={view === n}
+              aria-label={i.alt(ph)}
+              onClick={() => setView(n)}
               className={`relative h-[4.5rem] w-[4.5rem] overflow-hidden rounded-[10px] border-[1.5px] transition-colors ${
-                view === i ? "border-ember" : "border-transparent hover:border-apricot"
+                view === n ? "border-ember" : "border-transparent hover:border-apricot"
               }`}
             >
               <Image src={ph.src} alt="" fill sizes="72px" className="object-cover" />
@@ -119,11 +127,11 @@ export default function ProductDetail({ product }: { product: Product }) {
       </div>
 
       <div className="md:pt-10">
-        <Link href="/shop" className="label text-smoke hover:text-ink">← All formulas</Link>
+        <Link href="/shop" className="label text-smoke hover:text-ink">{t.product.allFormulas}</Link>
         <p className="label mt-8 flex items-center gap-3 text-smoke">
           {product.kind}
           <span className="rounded-full border border-ink/15 px-2.5 py-0.5 text-[11px]">
-            {rituals.length === 2 ? "Morning & evening" : rituals[0] === "AM" ? "Morning" : "Evening"}
+            {rituals.length === 2 ? t.common.morningEvening : rituals[0] === "AM" ? t.common.morning : t.common.evening}
           </span>
         </p>
         <h1 className="mt-3 font-display text-[clamp(2rem,4vw,3.2rem)] font-light leading-none tracking-tight">
@@ -141,7 +149,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                 key={v.id}
                 type="button"
                 aria-pressed={v.id === variant.id}
-                onClick={() => setVariant(v)}
+                onClick={() => setVariantId(v.id)}
                 className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors ${
                   v.id === variant.id ? "border-ink bg-ink text-canvas" : "border-ink/20 hover:border-ink"
                 }`}
@@ -167,20 +175,20 @@ export default function ProductDetail({ product }: { product: Product }) {
                 setOpened(false);
               }
             }}
-            className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
+            className="flex w-full items-center justify-between gap-4 px-5 py-4 text-start"
           >
             <span>
-              <span className="block text-[15px] text-ink">Engrave it</span>
+              <span className="block text-[15px] text-ink">{t.product.engraveTitle}</span>
               <span className="block text-sm text-smoke">
-                A name or initials on the back of the glass · +{formatPrice(ENGRAVING_PRICE)}
+                {i.fmt(t.product.engraveSub, { price: i.price(ENGRAVING_PRICE) })}
               </span>
             </span>
             <span aria-hidden className={`atelier-plus ${engraveOpen ? "is-open" : ""}`} />
           </button>
           <div id={`${inputId}-panel`} hidden={!engraveOpen} className="border-t border-mist px-5 pb-5 pt-4">
             <label htmlFor={inputId} className="label flex justify-between text-smoke">
-              <span>Your words</span>
-              <span className="tabular-nums">
+              <span>{t.product.yourWords}</span>
+              <span className="tabular-nums" dir="ltr">
                 {engraveText.length}/{ENGRAVING_MAX}
               </span>
             </label>
@@ -193,11 +201,11 @@ export default function ProductDetail({ product }: { product: Product }) {
               maxLength={ENGRAVING_MAX}
               value={engraveText}
               onChange={(e) => setEngraveText(cleanEngraving(e.target.value))}
-              placeholder="e.g. Amélie, or A·M"
+              placeholder={t.product.engravePlaceholder}
               className="mt-2 w-full rounded-full border border-ink/20 bg-transparent px-5 py-3 text-lg font-light tracking-[0.04em] text-ink outline-none placeholder:text-smoke focus:border-ink"
             />
             <fieldset className="mt-4">
-              <legend className="label text-smoke">Finish</legend>
+              <legend className="label text-smoke">{t.product.finish}</legend>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 {ENGRAVING_STYLES.map((s) => (
                   <button
@@ -205,18 +213,18 @@ export default function ProductDetail({ product }: { product: Product }) {
                     type="button"
                     aria-pressed={engraveStyle === s.id}
                     onClick={() => setEngraveStyle(s.id)}
-                    className={`rounded-[10px] border px-4 py-3 text-left transition-colors ${
+                    className={`rounded-[10px] border px-4 py-3 text-start transition-colors ${
                       engraveStyle === s.id ? "border-ink" : "border-ink/15 hover:border-ink/50"
                     }`}
                   >
-                    <span className={`block text-sm ${s.id === "foil" ? "foil font-medium" : "text-ink"}`}>{s.label}</span>
-                    <span className="block text-xs text-smoke">{s.note}</span>
+                    <span className={`block text-sm ${s.id === "foil" ? "foil font-medium" : "text-ink"}`}>{t.product.styles[s.id].label}</span>
+                    <span className="block text-xs text-smoke">{t.product.styles[s.id].note}</span>
                   </button>
                 ))}
               </div>
             </fieldset>
             <p className="mt-4 text-xs text-smoke">
-              Made to order, ships in 3–5 working days. Engraved pieces can only be returned if faulty.
+              {t.product.engraveNote}
             </p>
           </div>
         </section>
@@ -230,23 +238,23 @@ export default function ProductDetail({ product }: { product: Product }) {
             }}
             className="btn"
           >
-            Add to bag · {formatPrice(price)}
+            {i.fmt(t.product.addPrice, { price: i.price(price) })}
           </button>
           {added && (
             <Link href="/cart" role="status" className="text-sm underline underline-offset-4">
-              Added to bag. View bag
+              {t.product.addedView}
             </Link>
           )}
         </div>
 
         <section className="mt-14 border-t border-mist pt-8">
-          <h2 className="label text-smoke">Actives</h2>
+          <h2 className="label text-smoke">{t.product.actives}</h2>
           <ul className="mt-4 space-y-3">
             {product.actives.map((a) => (
               <li key={a.name}>
                 <div className="flex justify-between text-sm">
                   <span>{a.name}</span>
-                  <span className="label">{a.percent}%</span>
+                  <span className="label tabular-nums">{i.num(a.percent)}%</span>
                 </div>
                 <span className="mt-1.5 block h-1.5 rounded-full bg-mist">
                   <span
@@ -261,11 +269,11 @@ export default function ProductDetail({ product }: { product: Product }) {
 
         <section className="mt-12 space-y-8 border-t border-mist pt-8">
           <div>
-            <h2 className="label text-smoke">What it does</h2>
+            <h2 className="label text-smoke">{t.product.does}</h2>
             <p className="mt-3 leading-relaxed">{product.description}</p>
           </div>
           <div>
-            <h2 className="label text-smoke">How to use</h2>
+            <h2 className="label text-smoke">{t.product.howTo}</h2>
             <p className="mt-3 leading-relaxed">{product.howToUse}</p>
           </div>
         </section>

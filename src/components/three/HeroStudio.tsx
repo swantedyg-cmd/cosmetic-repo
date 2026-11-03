@@ -10,6 +10,7 @@ import Bottle, { baseOffset } from "./Bottle";
 import Studio from "./Studio";
 import { damp, ease, enter, introDelay, speed, timing } from "./motion";
 import { getProduct, type Product } from "@/data/products";
+import { useI18n } from "@/i18n/client";
 import { sceneColors, useTheme } from "@/lib/theme";
 
 // The hero is staged like an editorial beauty shot: the whole range on plinths
@@ -34,6 +35,7 @@ type Props = {
 };
 
 export default function HeroStudio({ quality, reducedMotion, active, exit }: Props) {
+  const i18n = useI18n();
   return (
     <SceneCanvas
       quality={quality}
@@ -44,11 +46,11 @@ export default function HeroStudio({ quality, reducedMotion, active, exit }: Pro
       <Backdrop reducedMotion={reducedMotion} />
       <Studio />
       <Strobe reducedMotion={reducedMotion} />
-      <Rig reducedMotion={reducedMotion} exit={exit}>
+      <Rig reducedMotion={reducedMotion} exit={exit} rtl={i18n.rtl}>
         {SET.map((item, i) => (
           <Piece
             key={item.slug}
-            product={getProduct(item.slug)!}
+            product={i18n.product(getProduct(item.slug)!)}
             index={i}
             exit={exit}
             {...item}
@@ -82,7 +84,17 @@ export default function HeroStudio({ quality, reducedMotion, active, exit }: Pro
 }
 
 /** Positions the set for the viewport, dollies in on load, and rises over the set as you scroll away. */
-function Rig({ children, reducedMotion, exit }: { children: React.ReactNode; reducedMotion: boolean; exit: { current: number } }) {
+function Rig({
+  children,
+  reducedMotion,
+  exit,
+  rtl,
+}: {
+  children: React.ReactNode;
+  reducedMotion: boolean;
+  exit: { current: number };
+  rtl: boolean;
+}) {
   const group = useRef<THREE.Group>(null);
   const { viewport } = useThree();
   const wide = viewport.aspect > 1.1;
@@ -92,7 +104,8 @@ function Rig({ children, reducedMotion, exit }: { children: React.ReactNode; red
     ? Math.min(0.85, viewport.width / 13.5, viewport.height / 5.8)
     : Math.min(0.72, viewport.width / 6.8, viewport.height / 8.5);
   // The set spans roughly x -2.2 → 3.2, so shift it left by its centre (0.5) on phones.
-  const offsetX = wide ? viewport.width * 0.13 : -0.5 * scale;
+  // Right-to-left pages set the headline on the right, so the set mirrors to the left of centre.
+  const offsetX = wide ? (rtl ? -viewport.width * 0.13 - scale : viewport.width * 0.13) : -0.5 * scale;
   const offsetY = wide ? -viewport.height * 0.1 : viewport.height * 0.06;
   const start = useRef<number | null>(null);
 

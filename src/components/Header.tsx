@@ -1,24 +1,30 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import Link from "@/i18n/Link";
 import { useCart } from "@/lib/cart";
+import { useI18n } from "@/i18n/client";
+import { stripLocale } from "@/i18n/config";
 import { BagIcon, SearchIcon, UserIcon } from "./icons";
+import LanguageSwitcher, { LanguageRow } from "./LanguageSwitcher";
 import ThemeToggle from "./ThemeToggle";
 
-const NAV = [
-  { href: "/shop", label: "Shop" },
-  { href: "/routine", label: "Routine finder" },
-  { href: "/ingredients", label: "Ingredients" },
-  { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
-];
+const FREE_SHIPPING = 60;
 
 export default function Header() {
   const { count } = useCart();
-  const path = usePathname();
+  const i = useI18n();
+  const { t } = i;
+  const path = stripLocale(usePathname() ?? "/");
   const [open, setOpen] = useState(false);
+  const nav = [
+    { href: "/shop", label: t.header.shop },
+    { href: "/routine", label: t.header.routine },
+    { href: "/ingredients", label: t.header.ingredients },
+    { href: "/about", label: t.header.about },
+    { href: "/contact", label: t.header.contact },
+  ];
 
   // Escape closes the menu.
   useEffect(() => {
@@ -31,19 +37,19 @@ export default function Header() {
   return (
     <header className="fixed inset-x-0 top-0 z-50">
       <p className="keep-day bg-graphite py-2 text-center text-[11px] tracking-normal text-canvas">
-        Free shipping over €60 · A sample with every order
+        {i.fmt(t.header.banner, { price: i.price(FREE_SHIPPING) })}
       </p>
       <div className="border-b border-mist bg-canvas/90 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between px-5 md:px-10">
-          <Link href="/" className="text-[15px] font-semibold uppercase tracking-[-0.02em] text-ink">
+          <Link href="/" lang="en" dir="ltr" className="text-[15px] font-semibold uppercase tracking-[-0.02em] text-ink">
             Solenne
           </Link>
           <nav className="absolute left-1/2 hidden -translate-x-1/2 gap-6 text-sm text-ink lg:flex">
-            {NAV.map((n) => (
+            {nav.map((n) => (
               <Link
                 key={n.href}
                 href={n.href}
-                className={`underline-offset-[6px] decoration-apricot decoration-[1.5px] hover:underline ${
+                className={`whitespace-nowrap underline-offset-[6px] decoration-apricot decoration-[1.5px] hover:underline ${
                   path.startsWith(n.href) ? "underline" : ""
                 }`}
               >
@@ -53,16 +59,17 @@ export default function Header() {
           </nav>
           <div className="flex items-center gap-5 text-ink">
             <ThemeToggle className="hidden sm:inline-flex" />
-            <Link href="/shop" aria-label="Search products" className="hover:text-ember">
+            <LanguageSwitcher />
+            <Link href="/shop" aria-label={t.header.search} className="hover:text-ember">
               <SearchIcon />
             </Link>
-            <Link href="/contact" aria-label="Account" className="hidden hover:text-ember sm:block">
+            <Link href="/contact" aria-label={t.header.account} className="hidden hover:text-ember sm:block">
               <UserIcon />
             </Link>
-            <Link href="/cart" aria-label={`Bag, ${count} ${count === 1 ? "item" : "items"}`} className="relative hover:text-ember">
+            <Link href="/cart" aria-label={i.plural(t.header.bag, count)} className="relative hover:text-ember">
               <BagIcon />
               {count > 0 && (
-                <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-tangerine px-1 text-[9px] font-medium text-canvas">
+                <span className="absolute -end-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-tangerine px-1 text-[9px] font-medium text-canvas">
                   {count}
                 </span>
               )}
@@ -74,7 +81,7 @@ export default function Header() {
               aria-controls="mobile-menu"
               className="text-sm lg:hidden"
             >
-              {open ? "Close" : "Menu"}
+              {open ? t.header.close : t.header.menu}
             </button>
           </div>
         </div>
@@ -89,15 +96,16 @@ export default function Header() {
       >
         <nav className="mx-auto flex max-w-[1280px] flex-col px-5 pb-10 pt-4 md:px-10">
           <div className="flex items-center justify-between border-b border-mist py-4 sm:hidden">
-            <span className="text-sm text-smoke">Ritual</span>
+            <span className="text-sm text-smoke">{t.header.ritual}</span>
             <ThemeToggle />
           </div>
-          {NAV.map((n, i) => (
+          <LanguageRow />
+          {nav.map((n, idx) => (
             <Link
               key={n.href}
               href={n.href}
               onClick={() => setOpen(false)}
-              style={{ "--i": i } as React.CSSProperties}
+              style={{ "--i": idx } as React.CSSProperties}
               className={`mobile-menu-link display border-b border-mist py-4 text-[clamp(2rem,8vw,3rem)] ${
                 path.startsWith(n.href) ? "text-ember" : "text-ink"
               }`}

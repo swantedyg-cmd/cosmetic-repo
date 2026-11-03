@@ -3,8 +3,9 @@
 import { useRef, useState } from "react";
 import { useSectionScroll } from "@/lib/useSectionScroll";
 import dynamic from "next/dynamic";
-import Link from "next/link";
-import { featured, formatPrice } from "@/data/products";
+import Link from "@/i18n/Link";
+import { featured as featuredBase } from "@/data/products";
+import { useI18n } from "@/i18n/client";
 import { useDevice } from "@/lib/useDevice";
 import { useInView } from "@/lib/useInView";
 
@@ -14,11 +15,14 @@ const TourScene = dynamic(() => import("./three/TourScene"), { ssr: false });
 // each featured formula: the cap lifts and its actives rise out as droplets
 // sized by their real percentages, then it closes before the next one arrives.
 export default function FormulaTour() {
+  const i = useI18n();
+  const { t } = i;
+  const featured = i.products(featuredBase);
   const progress = useRef(0);
   const [stage, setStage] = useState(0);
   const section = useSectionScroll<HTMLElement>((p) => {
     progress.current = p;
-    setStage(Math.min(featured.length - 1, Math.floor(p * featured.length)));
+    setStage(Math.min(featuredBase.length - 1, Math.floor(p * featuredBase.length)));
   });
   const { quality, reducedMotion } = useDevice();
   const [stageRef, inView, near] = useInView<HTMLDivElement>({ lazy: true });
@@ -35,17 +39,18 @@ export default function FormulaTour() {
             progress={progress}
             quality={quality}
             reducedMotion={reducedMotion}
+            rtl={i.rtl}
           />
           )}
         </div>
 
-        <p className="pointer-events-none absolute left-5 top-28 text-sm text-smoke md:left-10 lg:left-16">
-          Inside the formula
+        <p className="pointer-events-none absolute start-5 top-28 text-sm text-smoke md:start-10 lg:start-16">
+          {t.tour.eyebrow}
         </p>
 
-        {featured.map((p, i) => (
+        {featured.map((p, n) => (
           <div key={p.slug}>
-            <Panel visible={stage === i} className="justify-end pb-[6svh] md:justify-center md:pb-0">
+            <Panel visible={stage === n} className="justify-end pb-[6svh] md:justify-center md:pb-0">
               <div className="max-w-sm rounded-[10px] border border-mist bg-canvas/85 p-5 backdrop-blur-md md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
                 <p className="text-sm text-smoke">
                   {p.kind} · {p.variants.at(-1)!.label}
@@ -56,30 +61,30 @@ export default function FormulaTour() {
                 <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-sm lg:hidden">
                   {p.actives.map((a) => (
                     <li key={a.name}>
-                      <span className="tabular-nums">{a.percent}%</span> <span className="text-smoke">{a.name}</span>
+                      <span className="tabular-nums">{i.num(a.percent)}%</span> <span className="text-smoke">{a.name}</span>
                     </li>
                   ))}
                 </ul>
                 <div className="mt-6 flex items-center gap-5">
-                  <Link href={`/shop/${p.slug}`} className="btn">See the formula</Link>
-                  <span className="text-sm">from {formatPrice(p.variants[0].price)}</span>
+                  <Link href={`/shop/${p.slug}`} className="btn">{t.tour.see}</Link>
+                  <span className="text-sm">{i.fmt(t.common.from, { price: i.price(p.variants[0].price) })}</span>
                 </div>
               </div>
             </Panel>
           </div>
         ))}
 
-        <ol className="absolute bottom-8 right-10 hidden gap-5 md:flex" aria-label="Featured formulas">
-          {featured.map((p, i) => (
+        <ol className="absolute bottom-8 end-10 hidden gap-5 md:flex" aria-label={t.tour.nav}>
+          {featured.map((p, n) => (
             <li
               key={p.slug}
               className={`flex items-center gap-2 text-xs transition-colors duration-500 ${
-                stage === i ? "text-ink" : "text-smoke"
+                stage === n ? "text-ink" : "text-smoke"
               }`}
             >
               <span
                 className={`h-1.5 w-1.5 rounded-full transition-colors duration-500 ${
-                  stage === i ? "bg-ember" : "bg-mist"
+                  stage === n ? "bg-ember" : "bg-mist"
                 }`}
               />
               {p.name}

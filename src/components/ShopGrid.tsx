@@ -4,14 +4,11 @@ import { useState } from "react";
 import ProductCard from "./ProductCard";
 import { CATEGORIES, products, ritualOf, type Category, type Ritual } from "@/data/products";
 import { useTheme } from "@/lib/theme";
+import { useI18n } from "@/i18n/client";
 
 type Sort = "routine" | "price-asc" | "price-desc";
 
-const SORTS: { id: Sort; label: string }[] = [
-  { id: "routine", label: "Routine order" },
-  { id: "price-asc", label: "Price, low to high" },
-  { id: "price-desc", label: "Price, high to low" },
-];
+const SORTS: Sort[] = ["routine", "price-asc", "price-desc"];
 
 const from = (slug: string) => products.find((p) => p.slug === slug)!.variants[0].price;
 
@@ -21,6 +18,7 @@ export default function ShopGrid() {
   const [sort, setSort] = useState<Sort>("routine");
   const [ritual, setRitual] = useState<Ritual | "Any">("Any");
   const night = useTheme() === "night";
+  const { t } = useI18n();
   // At night the evening formulas come forward first; by day, the morning ones.
   const lead: Ritual = night ? "PM" : "AM";
   const leads = (slug: string) => (ritualOf(slug).includes(lead) ? 0 : 1);
@@ -37,7 +35,7 @@ export default function ShopGrid() {
   return (
     <>
       <div className="mt-12 flex flex-col gap-4 border-b border-mist pb-6 md:flex-row md:items-center md:justify-between">
-        <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by step">
+        <div className="flex flex-wrap gap-2" role="group" aria-label={t.shop.filterStep}>
           {(["All", ...CATEGORIES] as const).map((c) => {
             const count = c === "All" ? products.length : products.filter((p) => p.category === c).length;
             return (
@@ -50,14 +48,14 @@ export default function ShopGrid() {
                   category === c ? "border-ink bg-ink text-canvas" : "border-ink/20 hover:border-ink"
                 }`}
               >
-                {c} <span className={`tabular-nums ${category === c ? "text-canvas/60" : "text-smoke"}`}>{count}</span>
+                {c === "All" ? t.common.all : t.catalog.categories[c]} <span className={`tabular-nums ${category === c ? "text-canvas/60" : "text-smoke"}`}>{count}</span>
               </button>
             );
           })}
         </div>
         <div className="flex flex-wrap items-center gap-5">
-        <div className="flex rounded-full border border-ink/20 p-1 text-sm" role="group" aria-label="Filter by ritual">
-          {([["Any", "Any time"], ["AM", "Morning"], ["PM", "Evening"]] as const).map(([id, label]) => (
+        <div className="flex rounded-full border border-ink/20 p-1 text-sm" role="group" aria-label={t.shop.filterRitual}>
+          {([["Any", t.common.anyTime], ["AM", t.common.morning], ["PM", t.common.evening]] as const).map(([id, label]) => (
             <button
               key={id}
               type="button"
@@ -70,15 +68,15 @@ export default function ShopGrid() {
           ))}
         </div>
         <label className="flex items-center gap-3 text-sm text-smoke">
-          Sort
+          {t.shop.sort}
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as Sort)}
             className="rounded-full border border-ink/20 bg-canvas px-4 py-2 text-ink hover:border-ink"
           >
             {SORTS.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.label}
+              <option key={s} value={s}>
+                {t.shop.sorts[s]}
               </option>
             ))}
           </select>
@@ -95,7 +93,7 @@ export default function ShopGrid() {
         ))}
       </ul>
       {shown.length === 0 && (
-        <p className="mt-10 text-smoke">Nothing in this step for that ritual. Try “Any time”.</p>
+        <p className="mt-10 text-smoke">{t.shop.empty}</p>
       )}
     </>
   );

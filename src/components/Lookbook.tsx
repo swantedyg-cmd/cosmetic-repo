@@ -3,19 +3,21 @@
 import { useRef } from "react";
 import { useSectionScroll } from "@/lib/useSectionScroll";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/i18n/Link";
+import { useI18n } from "@/i18n/client";
+import type { Dictionary } from "@/i18n";
 import { editorial, productPhotos, type Photo } from "@/data/photos";
 
-type Frame = { photo: Photo; caption: string; href?: string; size: "tall" | "wide" | "small" };
+type Frame = { photo: Photo; caption: keyof Dictionary["lookbook"]["captions"]; href?: string; size: "tall" | "wide" | "small" };
 
 const FRAMES: Frame[] = [
-  { photo: editorial.glass, caption: "Behind the glass", size: "tall" },
-  { photo: productPhotos["ember-facial-oil"][0], caption: "Ember Facial Oil, 30 ml", href: "/shop/ember-facial-oil", size: "small" },
-  { photo: editorial.applying, caption: "Two pumps, pressed in", href: "/shop/dew-serum", size: "wide" },
-  { photo: productPhotos["veil-barrier-cream"][0], caption: "Veil Barrier Cream", href: "/shop/veil-barrier-cream", size: "tall" },
-  { photo: editorial.freckles, caption: "Bare skin, morning light", size: "small" },
-  { photo: productPhotos["tint-balm"][1], caption: "Tint Balm in Rose, Coral, Cocoa", href: "/shop/tint-balm", size: "wide" },
-  { photo: editorial.portrait, caption: "Nothing to cover", size: "tall" },
+  { photo: editorial.glass, caption: "glass", size: "tall" },
+  { photo: productPhotos["ember-facial-oil"][0], caption: "ember", href: "/shop/ember-facial-oil", size: "small" },
+  { photo: editorial.applying, caption: "applying", href: "/shop/dew-serum", size: "wide" },
+  { photo: productPhotos["veil-barrier-cream"][0], caption: "veil", href: "/shop/veil-barrier-cream", size: "tall" },
+  { photo: editorial.freckles, caption: "freckles", size: "small" },
+  { photo: productPhotos["tint-balm"][1], caption: "tint", href: "/shop/tint-balm", size: "wide" },
+  { photo: editorial.portrait, caption: "portrait", size: "tall" },
 ];
 
 const SIZE: Record<Frame["size"], string> = {
@@ -27,22 +29,26 @@ const SIZE: Record<Frame["size"], string> = {
 // A pinned strip of photographs that travels sideways as you scroll down.
 // Each picture also drifts inside its frame, so the strip reads in depth.
 export default function Lookbook() {
+  const i = useI18n();
+  const { t } = i;
   const track = useRef<HTMLDivElement>(null);
-  // Cached on measure: how far the strip travels, and each frame's centre along it.
-  const layout = useRef({ wide: false, distance: 0, centres: [] as number[], imgs: [] as HTMLElement[] });
+  // Cached on measure: how far the strip travels, which way, where it rests on screen,
+  // and each frame's centre along it.
+  const layout = useRef({ wide: false, distance: 0, sign: -1, origin: 0, centres: [] as number[], imgs: [] as HTMLElement[] });
 
   const section = useSectionScroll<HTMLElement>(
     (p) => {
       const t = track.current;
       const L = layout.current;
       if (!t || !L.wide) return;
-      const x = -p * L.distance;
+      // Left-to-right languages walk the strip leftwards; Arabic walks it rightwards.
+      const x = L.sign * p * L.distance;
       t.style.transform = `translate3d(${x}px, 0, 0)`;
       // Each photo drifts inside its frame by where that frame sits on screen.
       const vw = window.innerWidth;
-      for (let i = 0; i < L.imgs.length; i++) {
-        const centre = (L.centres[i] + x) / vw - 0.5;
-        L.imgs[i].style.transform = `translate3d(${centre * -12}%, 0, 0) scale(1.25)`;
+      for (let k = 0; k < L.imgs.length; k++) {
+        const centre = (L.origin + L.centres[k] + x) / vw - 0.5;
+        L.imgs[k].style.transform = `translate3d(${centre * -12}%, 0, 0) scale(1.25)`;
       }
     },
     () => {
@@ -58,7 +64,9 @@ export default function Lookbook() {
       const prev = t.style.transform;
       t.style.transform = "";
       L.distance = t.scrollWidth - window.innerWidth;
+      L.sign = getComputedStyle(t).direction === "rtl" ? 1 : -1;
       const base = t.getBoundingClientRect().left;
+      L.origin = base;
       L.imgs = [...t.querySelectorAll<HTMLElement>("[data-drift]")];
       L.centres = L.imgs.map((img) => {
         const r = img.parentElement!.getBoundingClientRect();
@@ -69,21 +77,21 @@ export default function Lookbook() {
   );
 
   return (
-    <section ref={section} className="relative bg-blush md:h-[320svh]" aria-label="Lookbook">
+    <section ref={section} className="relative bg-blush md:h-[320svh]" aria-label={t.lookbook.label}>
       <div className="overflow-x-auto md:sticky md:top-0 md:h-svh md:overflow-hidden">
         <div
           ref={track}
           className="flex h-full w-max items-center gap-6 px-5 py-20 will-change-transform md:gap-10 md:px-16 md:py-0"
         >
-          <div className="flex w-[78vw] shrink-0 flex-col justify-center md:w-[34vw] md:pr-10">
-            <p className="text-sm text-ink/60">Lookbook</p>
+          <div className="flex w-[78vw] shrink-0 flex-col justify-center md:w-[34vw] md:pe-10">
+            <p className="text-sm text-ink/60">{t.lookbook.label}</p>
             <h2 className="display mt-4 text-[clamp(2.8rem,6vw,5.5rem)]">
-              Worn in
+              {t.lookbook.title1}
               <br />
-              daylight
+              {t.lookbook.title2}
             </h2>
             <p className="mt-6 max-w-[30ch] text-ink/70">
-              No retouching on skin, no filters on glass. Keep scrolling to walk the set.
+              {t.lookbook.body}
             </p>
           </div>
 
@@ -94,22 +102,22 @@ export default function Lookbook() {
                   <Image
                     data-drift
                     src={f.photo.src}
-                    alt={f.photo.alt}
+                    alt={i.alt(f.photo)}
                     fill
                     sizes="(min-width: 768px) 45vw, 85vw"
                     className="scale-125 object-cover will-change-transform"
                   />
                 </div>
                 <figcaption className="mt-3 flex items-center justify-between gap-4 text-sm text-ink">
-                  {f.caption}
-                  {f.href && <span className="text-ink/40 transition-colors group-hover:text-ember">Shop →</span>}
+                  {t.lookbook.captions[f.caption]}
+                  {f.href && <span className="shrink-0 text-ink/40 transition-colors group-hover:text-ember">{t.common.shopArrow}</span>}
                 </figcaption>
               </>
             );
             return (
               <figure key={f.caption} className={`shrink-0 ${f.size === "small" ? "self-end md:mb-[14svh]" : ""}`}>
                 {f.href ? (
-                  <Link href={f.href} data-cursor="Shop" className="group block">
+                  <Link href={f.href} data-cursor={t.lookbook.cursor} className="group block">
                     {body}
                   </Link>
                 ) : (

@@ -2,7 +2,8 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useRef } from "react";
-import Link from "next/link";
+import Link from "@/i18n/Link";
+import { useI18n } from "@/i18n/client";
 import { brandStat, products } from "@/data/products";
 import { useDevice } from "@/lib/useDevice";
 import { useInView } from "@/lib/useInView";
@@ -17,6 +18,7 @@ export default function Hero() {
   const { quality, reducedMotion } = useDevice();
   const [ref, inView] = useInView<HTMLElement>();
   const exit = useRef(0);
+  const { t } = useI18n();
 
   // How far the hero has scrolled out, read by the 3D set every frame (no re-renders).
   useEffect(() => {
@@ -34,10 +36,10 @@ export default function Hero() {
       </div>
 
       {/* Stat annotations, hung off hairlines like gallery labels */}
-      <ul className="pointer-events-none absolute right-10 top-32 hidden flex-col gap-6 lg:flex xl:right-16">
+      <ul className="pointer-events-none absolute end-10 top-32 hidden flex-col gap-6 lg:flex xl:end-16">
         {[
-          { value: brandStat.value, label: "Percentage of natural ingredients" },
-          { value: String(products.length), label: "Formulas. Nothing more." },
+          { value: brandStat.value, label: t.hero.statNatural },
+          { value: String(products.length), label: t.hero.statFormulas },
         ].map((a, i) => (
           <li
             key={a.label}
@@ -59,18 +61,18 @@ export default function Hero() {
       <div className="pointer-events-none absolute inset-x-0 bottom-0 px-5 pb-10 md:px-10 md:pb-14 lg:px-16">
         <h1 className="display text-[clamp(2.4rem,min(5vw,10svh),4.75rem)] !leading-[0.98]">
           <span className="reveal-line block overflow-hidden">
-            <span className="block" style={{ animationDelay: "calc(var(--intro) + 500ms)" }}>Skincare you can</span>
+            <span className="block" style={{ animationDelay: "calc(var(--intro) + 500ms)" }}>{t.hero.line1}</span>
           </span>{" "}
           <span className="reveal-line block overflow-hidden">
-            <span className="block" style={{ animationDelay: "calc(var(--intro) + 620ms)" }}>see through</span>
+            <span className="block" style={{ animationDelay: "calc(var(--intro) + 620ms)" }}>{t.hero.line2}</span>
           </span>
         </h1>
         <p className="reveal mt-5 max-w-[34ch] text-ink/70" style={{ animationDelay: "calc(var(--intro) + 850ms)" }}>
-          Clear glass, short formulas, and every active printed at its exact percentage.
+          {t.hero.lead}
         </p>
         <div className="reveal pointer-events-auto mt-7 flex flex-wrap items-center gap-5" style={{ animationDelay: "calc(var(--intro) + 1000ms)" }}>
-          <Link href="/shop" className="btn btn-white">Shop the formulas</Link>
-          <span className="hidden text-sm text-ink/60 md:inline">Drag a bottle to play · click to open it</span>
+          <Link href="/shop" className="btn btn-white">{t.hero.cta}</Link>
+          <span className="hidden text-sm text-ink/60 md:inline">{t.hero.hint}</span>
         </div>
       </div>
     </section>

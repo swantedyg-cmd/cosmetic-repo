@@ -68,8 +68,8 @@
   --color-blush-2: var(--blush-2);
   --color-blush-3: var(--blush-3);
   --color-blush-4: var(--blush-4);
-  --font-display: var(--font-onest);
-  --font-sans: var(--font-onest);
+  --font-display: var(--font-onest), var(--font-arabic);
+  --font-sans: var(--font-onest), var(--font-arabic);
 }
 
 html {
@@ -79,7 +79,8 @@ html {
 body {
   background: var(--canvas);
   color: var(--graphite);
-  font-family: var(--font-onest), system-ui, sans-serif;
+  /* Onest sets Latin and digits; Arabic text falls through to IBM Plex Sans Arabic. */
+  font-family: var(--font-onest), var(--font-arabic), system-ui, sans-serif;
   letter-spacing: -0.02em;
   overflow-x: clip;
 }
@@ -780,4 +781,70 @@ html.lenis body {
 .wave-band:not([data-visible]) .marquee,
 .wave-band:not([data-visible]) .wave-cell {
   animation: none !important;
+}
+
+/* ---------- Languages ---------- */
+/* Flags: a hairline keeps the white in the French and British flags off the page. */
+.flag {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 14%, transparent);
+}
+.flag > svg {
+  display: block;
+}
+.lang-menu:not([hidden]) {
+  animation: lang-in 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: top right;
+}
+[dir="rtl"] .lang-menu:not([hidden]) {
+  transform-origin: top left;
+}
+@keyframes lang-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+}
+
+/* Right-to-left: mirror the few pieces placed with physical left/right. */
+[dir="rtl"] .theme-toggle-knob {
+  left: auto;
+  right: 2px;
+}
+[dir="rtl"] .is-night .theme-toggle-knob {
+  transform: translateX(-18px);
+}
+[dir="rtl"] .layer-stack-name {
+  left: auto;
+  right: 16px;
+}
+[dir="rtl"] .skip-link {
+  left: auto;
+  right: 16px;
+}
+[dir="rtl"] .intro-bar {
+  transform-origin: right;
+}
+
+/* Arabic: letters join, so no tracking anywhere (the site tracks Latin tight on purpose),
+   and taller ascenders and descenders need more line height than Onest's display setting.
+   Inside the utilities layer so it outranks the tracking and leading utilities. */
+@layer utilities {
+  html[lang="ar"],
+  html[lang="ar"] * {
+    letter-spacing: 0 !important;
+  }
+  html[lang="ar"] .display {
+    line-height: 1.3 !important;
+  }
+  html[lang="ar"] .leading-none {
+    line-height: 1.2 !important;
+  }
+  html[lang="ar"] .italic {
+    font-style: normal;
+  }
+  /* Big figures are digits, still set in Onest, so they keep their tight Latin setting. */
+  html[lang="ar"] .numeric {
+    letter-spacing: -0.06em !important;
+    line-height: 0.9 !important;
+  }
+  html[lang="ar"] .reveal-line {
+    padding-bottom: 0.2em;
+  }
 }

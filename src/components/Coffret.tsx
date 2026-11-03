@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useSectionScroll } from "@/lib/useSectionScroll";
 import dynamic from "next/dynamic";
-import Link from "next/link";
-import { formatPrice, getProduct } from "@/data/products";
+import Link from "@/i18n/Link";
+import { getProduct } from "@/data/products";
+import { useI18n } from "@/i18n/client";
 import { useCart } from "@/lib/cart";
 import { useDevice } from "@/lib/useDevice";
 import { useInView } from "@/lib/useInView";
@@ -12,8 +13,8 @@ import { useInView } from "@/lib/useInView";
 const CoffretScene = dynamic(() => import("./three/CoffretScene"), { ssr: false });
 
 // The evening ritual, in the order it goes on, at its smallest size.
-const SET = ["ember-facial-oil", "dew-serum", "veil-barrier-cream"].map((s) => getProduct(s)!);
-const TOTAL = SET.reduce((sum, p) => sum + p.variants[0].price, 0);
+const SET_BASE = ["ember-facial-oil", "dew-serum", "veil-barrier-cream"].map((s) => getProduct(s)!);
+const TOTAL = SET_BASE.reduce((sum, p) => sum + p.variants[0].price, 0);
 
 /** Scroll position (0 → 1) where each caption takes over: wrapped, opening, open. */
 const CHAPTERS = [0, 0.2, 0.55];
@@ -31,6 +32,9 @@ export default function Coffret() {
   const { add } = useCart();
   const { quality, reducedMotion } = useDevice();
   const [stageRef, inView, near] = useInView<HTMLDivElement>({ lazy: true });
+  const i = useI18n();
+  const { t } = i;
+  const SET = i.products(SET_BASE);
 
   useEffect(() => {
     if (!added) return;
@@ -47,57 +51,67 @@ export default function Coffret() {
     <section ref={section} className="keep-day coffret relative h-[320svh] text-canvas" aria-labelledby="coffret-title">
       <div ref={stageRef} className="sticky top-0 h-svh overflow-hidden">
         <div className="absolute inset-0" aria-hidden>
-          {near && <CoffretScene products={SET} progress={progress} quality={quality} reducedMotion={reducedMotion} active={inView} />}
+          {near && (
+            <CoffretScene
+              products={SET}
+              progress={progress}
+              quality={quality}
+              reducedMotion={reducedMotion}
+              active={inView}
+              lid={t.coffret.lid}
+              rtl={i.rtl}
+            />
+          )}
         </div>
 
         <Chapter visible={chapter === 0}>
-          <p className="text-sm text-gold">The coffret</p>
+          <p className="text-sm text-gold">{t.coffret.eyebrow}</p>
           <h2 id="coffret-title" className="display foil mt-3 text-[clamp(2.6rem,6vw,5rem)]">
-            A gift, wrapped by hand
+            {t.coffret.title}
           </h2>
           <p className="mt-5 max-w-[34ch] text-canvas/60">
-            Three evening formulas in a black lacquer box, tied in gold satin. Keep scrolling to open it.
+            {t.coffret.body}
           </p>
         </Chapter>
 
         <Chapter visible={chapter === 1}>
-          <p className="text-sm text-gold">Lift the lid</p>
-          <p className="display foil mt-3 text-[clamp(2.6rem,6vw,5rem)]">Laid in velvet</p>
+          <p className="text-sm text-gold">{t.coffret.eyebrow2}</p>
+          <p className="display foil mt-3 text-[clamp(2.6rem,6vw,5rem)]">{t.coffret.title2}</p>
           <p className="mt-5 max-w-[34ch] text-canvas/60">
-            Each bottle has its own bed, so nothing knocks together on the way, and the box stays on the vanity long after.
+            {t.coffret.body2}
           </p>
         </Chapter>
 
         <Chapter visible={chapter === 2}>
-          <p className="text-sm text-gold">The evening coffret</p>
-          <p className="display foil mt-3 text-[clamp(2.6rem,6vw,5rem)]">Oil, serum, cream</p>
+          <p className="text-sm text-gold">{t.coffret.eyebrow3}</p>
+          <p className="display foil mt-3 text-[clamp(2.6rem,6vw,5rem)]">{t.coffret.title3}</p>
           <ol className="mt-6 max-w-sm border-t border-gold/25">
-            {SET.map((p, i) => (
+            {SET.map((p, n) => (
               <li key={p.slug} className="flex items-baseline gap-5 border-b border-gold/25 py-3">
-                <span className="text-xs text-canvas/45">Step {i + 1}</span>
+                <span className="shrink-0 text-xs text-canvas/45">{i.fmt(t.common.step, { n: n + 1 })}</span>
                 <Link href={`/shop/${p.slug}`} className="text-[19px] font-extralight tracking-[-0.03em] transition-colors hover:text-gold">
                   {p.name}
                 </Link>
-                <span className="ml-auto text-sm tabular-nums text-canvas/50">{p.variants[0].label}</span>
+                <span className="ms-auto shrink-0 text-sm tabular-nums text-canvas/50">{p.variants[0].label}</span>
               </li>
             ))}
           </ol>
           <div className="mt-7 flex flex-wrap items-center gap-5">
             <button type="button" onClick={addSet} className="btn btn-gold min-w-[13.5rem]">
-              {added ? "Added to bag" : "Add the set to bag"}
+              {added ? t.coffret.added : t.coffret.add}
             </button>
-            <span className="text-sm tabular-nums text-canvas/70">{formatPrice(TOTAL)}</span>
+            <span className="text-sm tabular-nums text-canvas/70">{i.price(TOTAL)}</span>
           </div>
           <p className="sr-only" aria-live="polite">
-            {added ? "The evening coffret was added to your bag" : ""}
+            {added ? t.coffret.addedStatus : ""}
           </p>
         </Chapter>
 
-        <ol className="absolute bottom-8 right-5 flex gap-2 md:right-10" aria-hidden>
-          {CHAPTERS.map((c, i) => (
+        <ol className="absolute bottom-8 end-5 flex gap-2 md:end-10" aria-hidden>
+          {CHAPTERS.map((c, n) => (
             <li
               key={c}
-              className={`h-px w-8 transition-colors duration-700 ${chapter >= i ? "bg-gold" : "bg-canvas/20"}`}
+              className={`h-px w-8 transition-colors duration-700 ${chapter >= n ? "bg-gold" : "bg-canvas/20"}`}
             />
           ))}
         </ol>

@@ -2,19 +2,20 @@
 
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import Link from "next/link";
+import Link from "@/i18n/Link";
+import { useI18n } from "@/i18n/client";
 import { useRouter } from "next/navigation";
-import { formatPrice, getProduct } from "@/data/products";
+import { getProduct } from "@/data/products";
 import { useDevice } from "@/lib/useDevice";
 import { useInView } from "@/lib/useInView";
 
 const VitrineScene = dynamic(() => import("./three/VitrineScene"), { ssr: false });
 
 // Six on the table: a full set of ten would crowd the plinths.
-const products = ["lumen-c-serum", "dew-serum", "veil-barrier-cream", "nocturne-retinal-serum", "ember-facial-oil", "tint-balm"].map(
+const productsBase = ["lumen-c-serum", "dew-serum", "veil-barrier-cream", "nocturne-retinal-serum", "ember-facial-oil", "tint-balm"].map(
   (s) => getProduct(s)!,
 );
-const N = products.length;
+const N = productsBase.length;
 const STEP = (Math.PI * 2) / N;
 /** Seconds between turns when nobody is touching the table. */
 const AUTO_TURN = 6;
@@ -23,6 +24,9 @@ const AUTO_TURN = 6;
 // it forward, tap the front bottle to open its page. It turns on its own when idle.
 export default function Vitrine() {
   const router = useRouter();
+  const i = useI18n();
+  const { t } = i;
+  const products = i.products(productsBase);
   const { quality, reducedMotion } = useDevice();
   const [stageRef, inView, near] = useInView<HTMLDivElement>({ lazy: true });
   const [turn, setTurn] = useState(0);
@@ -71,14 +75,15 @@ export default function Vitrine() {
     window.addEventListener("pointercancel", up);
   };
 
-  const pick = (i: number) => {
+  const i18nHref = i.href;
+  const pick = (idx: number) => {
     if (pointer.current?.moved) return;
-    if (i === front) {
-      router.push(`/shop/${products[i].slug}`);
+    if (idx === front) {
+      router.push(i18nHref(`/shop/${products[idx].slug}`));
       return;
     }
     // Turn the short way round.
-    const delta = ((i - front + N + Math.floor(N / 2)) % N) - Math.floor(N / 2);
+    const delta = ((idx - front + N + Math.floor(N / 2)) % N) - Math.floor(N / 2);
     setTurn((t) => t + delta);
     setTouched(true);
   };
@@ -106,14 +111,14 @@ export default function Vitrine() {
         </div>
 
         <div className="pointer-events-none absolute inset-x-0 top-0 mx-auto max-w-[1280px] px-5 pt-16 md:px-10 md:pt-20">
-          <p className="text-sm text-gold">The vitrine</p>
+          <p className="text-sm text-gold">{t.vitrine.eyebrow}</p>
           <h2 id="vitrine-title" className="display mt-3 max-w-[14ch] text-[clamp(2.2rem,4.4vw,3.25rem)] !text-canvas">
-            The whole range, under glass
+            {t.vitrine.title}
           </h2>
           <p
             className={`mt-4 text-sm text-canvas/50 transition-opacity duration-700 ${touched ? "opacity-0" : "opacity-100"}`}
           >
-            Drag to turn the table
+            {t.vitrine.hint}
           </p>
         </div>
 
@@ -128,12 +133,12 @@ export default function Vitrine() {
               <p className="mt-2 max-w-[34ch] text-canvas/60">{p.tagline}</p>
             </div>
             <div className="pointer-events-auto flex items-center gap-3">
-              <span className="mr-2 text-sm tabular-nums text-canvas/70">from {formatPrice(p.variants[0].price)}</span>
+              <span className="me-2 text-sm tabular-nums text-canvas/70">{i.fmt(t.common.from, { price: i.price(p.variants[0].price) })}</span>
               <Link href={`/shop/${p.slug}`} className="btn btn-white">
-                View {p.name}
+                {i.fmt(t.vitrine.view, { name: p.name })}
               </Link>
-              <TurnButton label="Previous product" onClick={() => setTurn((t) => t - 1)} flip />
-              <TurnButton label="Next product" onClick={() => setTurn((t) => t + 1)} />
+              <TurnButton label={t.vitrine.previous} onClick={() => setTurn((n) => n - 1)} flip />
+              <TurnButton label={t.vitrine.next} onClick={() => setTurn((n) => n + 1)} />
             </div>
           </div>
         </div>
@@ -150,7 +155,7 @@ function TurnButton({ label, onClick, flip }: { label: string; onClick: () => vo
       onClick={onClick}
       className="grid h-12 w-12 place-items-center rounded-full border border-gold/50 text-gold transition-colors hover:border-gold hover:bg-gold hover:text-ink"
     >
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden className={flip ? "rotate-180" : ""}>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden className={flip ? "rotate-180 rtl:rotate-0" : "rtl:rotate-180"}>
         <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     </button>

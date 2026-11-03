@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import { type Product } from "@/data/products";
 import { useCart } from "@/lib/cart";
+import { useI18n } from "@/i18n/client";
 
 /** Variant picker and quick add under a product card, so shoppers can buy without opening the page. */
 export default function CardActions({ product: p }: { product: Product }) {
   const { add } = useCart();
+  const { t, fmt } = useI18n();
   const [variant, setVariant] = useState(p.variants[0].id);
   const [added, setAdded] = useState(false);
   const shades = p.variants.every((v) => v.color);
@@ -67,12 +69,12 @@ export default function CardActions({ product: p }: { product: Product }) {
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
               <path className="quick-add-check" d="M2.5 7.5l3 3 6-7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            Added
+            {t.common.added}
           </>
         ) : (
-          "Add to bag"
+          t.common.addToBag
         )}
-        <span className="sr-only" aria-live="polite">{added ? `${p.name} added to bag` : ""}</span>
+        <span className="sr-only" aria-live="polite">{added ? fmt(t.common.addedName, { name: p.name }) : ""}</span>
       </button>
     </div>
   );

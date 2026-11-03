@@ -22,6 +22,8 @@ type Props = {
   quality: "high" | "low";
   reducedMotion: boolean;
   active: boolean;
+  /** Right-to-left pages: the copy sits on the right, so the bottle slides right and the droplets go left. */
+  rtl?: boolean;
 };
 
 export default function TourScene(props: Props) {
@@ -40,7 +42,8 @@ export default function TourScene(props: Props) {
   );
 }
 
-function Scene({ products, stage, progress, quality, reducedMotion }: Props) {
+function Scene({ products, stage, progress, quality, reducedMotion, rtl }: Props) {
+  const flip: 1 | -1 = rtl ? -1 : 1;
   const product = products[stage];
 
   // The bottle shrinks out, swaps shape, then grows back when the formula changes.
@@ -84,7 +87,7 @@ function Scene({ products, stage, progress, quality, reducedMotion }: Props) {
     rig.current.rotation.z = THREE.MathUtils.lerp(rig.current.rotation.z, state.pointer.x * -0.06, k);
 
     // Slide left as it opens so the droplets have room on the right.
-    const x = (wide ? viewport.width * 0.08 : 0) - open.current * size * 0.7;
+    const x = flip * ((wide ? viewport.width * 0.08 : 0) - open.current * size * 0.7);
     rig.current.position.x = THREE.MathUtils.lerp(rig.current.position.x, x, k);
     rig.current.position.y = THREE.MathUtils.lerp(rig.current.position.y, lift, k);
     bottle.current.position.y = reducedMotion ? 0 : Math.sin(state.clock.elapsedTime * 0.8) * 0.05;
@@ -98,7 +101,7 @@ function Scene({ products, stage, progress, quality, reducedMotion }: Props) {
           text={`${p.actives[0].percent}%`}
           active={i === stage}
           open={open}
-          x={wide ? viewport.width * 0.08 : 0}
+          x={flip * (wide ? viewport.width * 0.08 : 0)}
           lift={lift}
         />
       ))}
@@ -109,6 +112,7 @@ function Scene({ products, stage, progress, quality, reducedMotion }: Props) {
             product={shown}
             open={open}
             labels={wide}
+            side={flip}
             bubbles={quality === "high"}
             glass={quality === "high" ? "mtm" : "native"}
             lowQuality={quality === "low"}

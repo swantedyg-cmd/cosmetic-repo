@@ -71,7 +71,7 @@ function Droplets({
   return (
     <>
       {drops.map((d, i) => (
-        <Droplet key={d.name} index={i} drop={d} mouth={mouth} open={open} label={labels} reducedMotion={reducedMotion} />
+        <Droplet key={d.name} index={i} drop={d} mouth={mouth} open={open} label={labels} side={side} reducedMotion={reducedMotion} />
       ))}
     </>
   );
@@ -83,6 +83,7 @@ function Droplet({
   mouth,
   open,
   label,
+  side,
   reducedMotion,
 }: {
   index: number;
@@ -90,6 +91,7 @@ function Droplet({
   mouth: number;
   open: { current: number };
   label: boolean;
+  side: 1 | -1;
   reducedMotion?: boolean;
 }) {
   const mesh = useRef<THREE.Mesh>(null);
@@ -148,8 +150,9 @@ function Droplet({
         envMapIntensity={1.2}
       />
       {label && tagMounted && (
-        <Html position={[1.35, 0, 0]} center={false} zIndexRange={[10, 0]} style={{ pointerEvents: "none" }}>
-          <div ref={tag} className="formula-tag" style={{ opacity: 0 }}>
+        <Html position={[1.35 * side, 0, 0]} center={false} zIndexRange={[10, 0]} style={{ pointerEvents: "none" }}>
+          {/* On the left-hand side the tag hangs from its far edge, so it reads towards the drop. */}
+          <div ref={tag} className="formula-tag" style={{ opacity: 0, transform: side < 0 ? "translate(-100%, -50%)" : undefined }}>
             <span className="formula-tag-value">{drop.percent}%</span>
             <span className="formula-tag-name">{drop.name}</span>
           </div>

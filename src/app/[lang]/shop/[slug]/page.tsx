@@ -6,27 +6,42 @@ import ProductExtras from "@/components/ProductExtras";
 import { getProduct, products, type Product as ProductData } from "@/data/products";
 import { productPhotos } from "@/data/photos";
 import { BRAND, SITE_URL } from "@/lib/site";
+import { getI18n } from "@/i18n/server";
+import { alternates, ogLocale } from "@/i18n/seo";
+import type { I18n } from "@/i18n/make";
 
-type Params = PageProps<"/shop/[slug]">["params"];
+type Props = PageProps<"/[lang]/shop/[slug]">;
 
 export function generateStaticParams() {
   return products.map((p) => ({ slug: p.slug }));
 }
 
-export async function generateMetadata(props: PageProps<"/shop/[slug]">): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const i = await getI18n(props.params);
   const { slug } = await props.params;
-  const product = getProduct(slug);
-  if (!product) return {};
-  const description = `${product.tagline} ${product.actives.map((a) => `${a.name} ${a.percent}%`).join(", ")}.`;
+  const base = getProduct(slug);
+  if (!base) return {};
+  const product = i.product(base);
+  const description = i.fmt(i.t.product.metaDescription, {
+    tagline: product.tagline,
+    actives: product.actives.map((a) => `${a.name} ${i.num(a.percent)}%`).join(", "),
+  });
+  const path = `/shop/${product.slug}`;
   return {
     title: product.name,
     description,
-    alternates: { canonical: `/shop/${product.slug}` },
-    openGraph: { type: "website", title: `${product.name} · ${BRAND}`, description, url: `/shop/${product.slug}` },
+    alternates: alternates(i.locale, path),
+    openGraph: {
+      type: "website",
+      title: `${product.name} · ${BRAND}`,
+      description,
+      url: i.href(path),
+      ...ogLocale(i.locale),
+    },
   };
 }
 
-export default function ProductPage(props: PageProps<"/shop/[slug]">) {
+export default function ProductPage(props: Props) {
   return (
     <Suspense fallback={<div className="h-svh" />}>
       <Product params={props.params} />
@@ -34,13 +49,14 @@ export default function ProductPage(props: PageProps<"/shop/[slug]">) {
   );
 }
 
-async function Product({ params }: { params: Params }) {
+async function Product({ params }: { params: Props["params"] }) {
+  const i = await getI18n(params);
   const { slug } = await params;
   const product = getProduct(slug);
   if (!product) notFound();
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd(product)) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd(product, i)) }} />
       <ProductDetail product={product} />
       <ProductExtras product={product} />
     </>
@@ -48,14 +64,16 @@ async function Product({ params }: { params: Params }) {
 }
 
 /** Product rich result. No ratings: the reviews on the site are samples until real ones arrive. */
-function productJsonLd(p: ProductData) {
-  const url = `${SITE_URL}/shop/${p.slug}`;
+function productJsonLd(base: ProductData, i: I18n) {
+  const p = i.product(base);
+  const url = `${SITE_URL}${i.href(`/shop/${p.slug}`)}`;
   return {
     "@context": "https://schema.org",
     "@type": "Product",
     name: p.name,
     description: p.description,
     category: p.kind,
+    inLanguage: i.locale,
     brand: { "@type": "Brand", name: BRAND },
     image: productPhotos[p.slug].map((ph) => `${SITE_URL}${ph.src}`),
     url,

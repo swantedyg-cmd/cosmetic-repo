@@ -6,7 +6,7 @@ import SceneCanvas from "./SceneCanvas";
 import { Environment, Lightformer, Sparkles } from "@react-three/drei";
 import * as THREE from "three";
 import Bottle, { baseOffset } from "./Bottle";
-import { FAMILY, loadFonts } from "./label";
+import { labelFont, loadFonts } from "./label";
 import { damp, ease, span, speed } from "./motion";
 import type { Product } from "@/data/products";
 
@@ -38,6 +38,10 @@ type Props = {
   quality: "high" | "low";
   reducedMotion: boolean;
   active: boolean;
+  /** The line under the wordmark on the lid, in the page's language. */
+  lid: string;
+  /** Right-to-left pages keep the copy on the right, so the box moves left. */
+  rtl?: boolean;
 };
 
 export default function CoffretScene({ quality, active, ...props }: Props) {
@@ -67,12 +71,12 @@ export default function CoffretScene({ quality, active, ...props }: Props) {
 }
 
 /** Fits the box to the viewport, follows scroll with a smoothed value, and dollies the camera. */
-function Rig({ products, progress, quality, reducedMotion }: Omit<Props, "active">) {
+function Rig({ products, progress, quality, reducedMotion, lid, rtl }: Omit<Props, "active">) {
   const { viewport } = useThree();
   const wide = viewport.aspect > 1.1;
   // Desktop keeps the left of the frame for the copy; phones centre the box above it.
   const scale = wide ? Math.min(0.62, viewport.width / 14) : Math.min(0.55, viewport.width / 7);
-  const x = wide ? viewport.width * 0.16 : 0;
+  const x = wide ? viewport.width * 0.16 * (rtl ? -1 : 1) : 0;
   const y = wide ? -0.6 : 0.5;
   const t = useRef(0);
   const box = useRef<THREE.Group>(null);
@@ -99,7 +103,7 @@ function Rig({ products, progress, quality, reducedMotion }: Omit<Props, "active
     <group position={[x, y, 0]} scale={scale}>
       <group ref={box}>
         <Body />
-        <Lid t={t} reducedMotion={reducedMotion} />
+        <Lid t={t} reducedMotion={reducedMotion} caption={lid} />
         <Ribbon t={t} />
         {products.map((product, i) => (
           <Riser key={product.slug} product={product} index={i} t={t} quality={quality} reducedMotion={reducedMotion} />
@@ -187,12 +191,12 @@ function Trim({ y, w, d, r = 0.022 }: { y: number; w: number; d: number; r?: num
   );
 }
 
-function Lid({ t, reducedMotion }: { t: { current: number }; reducedMotion: boolean }) {
+function Lid({ t, reducedMotion, caption }: { t: { current: number }; reducedMotion: boolean; caption: string }) {
   const m = useMaterials();
   const lid = useRef<THREE.Group>(null);
   const lw = W + LID_T * 2;
   const ld = D + LID_T * 2;
-  const monogram = useMemo(() => createMonogramTexture(), []);
+  const monogram = useMemo(() => createMonogramTexture(caption), [caption]);
   const underside = useMemo(() => {
     const v = m.velvet.clone();
     v.side = THREE.FrontSide;
@@ -239,7 +243,7 @@ function Lid({ t, reducedMotion }: { t: { current: number }; reducedMotion: bool
 }
 
 /** Wordmark and a hairline frame in white on transparent; the material tints it gold. */
-function createMonogramTexture() {
+function createMonogramTexture(caption: string) {
   const canvas = document.createElement("canvas");
   canvas.width = 2048;
   canvas.height = Math.round(2048 * (D / W));
@@ -259,12 +263,15 @@ function createMonogramTexture() {
     ctx.fillStyle = "#fff";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.font = `200 ${ch * 0.3}px ${FAMILY}, sans-serif`;
+    ctx.font = labelFont(200, ch * 0.3);
     ctx.letterSpacing = `${ch * 0.06}px`;
     ctx.fillText("SOLENNE", cw / 2 + ch * 0.03, ch * 0.47);
-    ctx.font = `500 ${ch * 0.055}px ${FAMILY}, sans-serif`;
-    ctx.letterSpacing = `${ch * 0.03}px`;
-    ctx.fillText("THE EVENING COFFRET", cw / 2, ch * 0.74);
+    // Arabic joins its letters, so the caption is only tracked out in Latin scripts.
+    const arabic = /[؀-ۿ]/.test(caption);
+    ctx.font = labelFont(500, ch * (arabic ? 0.075 : 0.055));
+    ctx.letterSpacing = arabic ? "0px" : `${ch * 0.03}px`;
+    ctx.direction = arabic ? "rtl" : "ltr";
+    ctx.fillText(caption, cw / 2, ch * 0.74);
     texture.needsUpdate = true;
   };
   // Draw now with the fallback face, again once the brand font is in.

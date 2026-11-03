@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { CloseIcon, HeartIcon } from "./icons";
+import { useI18n } from "@/i18n/client";
 
 const SEEN_KEY = "solenne-email-modal-seen";
 
@@ -9,6 +10,7 @@ const SEEN_KEY = "solenne-email-modal-seen";
 export default function EmailModal() {
   const dialog = useRef<HTMLDialogElement>(null);
   const [joined, setJoined] = useState(false);
+  const { t } = useI18n();
 
   useEffect(() => {
     try {
@@ -32,21 +34,21 @@ export default function EmailModal() {
       <div className="relative px-8 pb-10 pt-12 text-center">
         <button
           type="button"
-          aria-label="Close"
+          aria-label={t.common.close}
           onClick={() => dialog.current?.close()}
-          className="absolute right-4 top-4"
+          className="absolute end-4 top-4"
         >
           <CloseIcon className="h-5 w-5 [stroke-width:2]" />
         </button>
         <HeartIcon className="mx-auto h-6 w-6" />
         <h2 className="mt-3 text-[32px] font-light italic leading-tight tracking-[-0.04em] text-canvas">
-          skincare community
+          {t.emailModal.title}
         </h2>
         {joined ? (
-          <p className="mt-4" role="status">You’re in. Your code is on its way to your inbox.</p>
+          <p className="mt-4" role="status">{t.emailModal.joined}</p>
         ) : (
           <>
-            <p className="mx-auto mt-3 max-w-xs">Join for 10% off your first order and first access to new formulas.</p>
+            <p className="mx-auto mt-3 max-w-xs">{t.emailModal.body}</p>
             <form
               className="mt-7 flex flex-col gap-3"
               onSubmit={(e) => {
@@ -54,16 +56,18 @@ export default function EmailModal() {
                 setJoined(true);
               }}
             >
-              <label htmlFor="modal-email" className="sr-only">Email address</label>
+              <label htmlFor="modal-email" className="sr-only">{t.common.emailLabel}</label>
               <input
                 id="modal-email"
                 type="email"
+                name="email"
+                autoComplete="email"
                 required
-                placeholder="Your email"
+                placeholder={t.common.emailPlaceholder}
                 className="rounded-[30px] border-2 border-canvas bg-transparent px-5 py-[13px] text-canvas outline-none placeholder:text-canvas/75"
               />
               <button className="rounded-[600px] bg-canvas px-12 py-[15px] font-medium text-ember transition-colors hover:bg-ink hover:text-canvas">
-                Get 10% off
+                {t.emailModal.cta}
               </button>
             </form>
           </>
