@@ -6,8 +6,8 @@ import { SITE_URL } from "./site";
 
 /** Previews encode their own address, so a test print can be scanned before launch. */
 const QR_BASE =
-  process.env.VERCEL_ENV === "preview" && process.env.VERCEL_BRANCH_URL
-    ? `https://${process.env.VERCEL_BRANCH_URL}`
+  process.env.VERCEL_ENV === "preview" && (process.env.VERCEL_BRANCH_URL || process.env.VERCEL_URL)
+    ? `https://${process.env.VERCEL_BRANCH_URL || process.env.VERCEL_URL}`
     : SITE_URL;
 
 export const scanUrl = (slug: string) => `${QR_BASE}/s/${slug}`;
