@@ -60,7 +60,7 @@ export default function ProductViewer({ product, color, quality, reducedMotion, 
 
 /** Eases the open state so the button toggle plays the same choreography as the scroll tour. */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- background is for the canvas, not the bottle
-function OpenableFormula({ opened, quality, showBack, background: _bg, ...rest }: Props) {
+export function OpenableFormula({ opened, quality, showBack, background: _bg, ...rest }: Props) {
   const turn = useRef<THREE.Group>(null);
   const open = useRef(0);
   const press = useRef(0);

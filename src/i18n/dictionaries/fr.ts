@@ -356,6 +356,22 @@ const fr: Dictionary = {
     body: "Elle a peut-être changé d’adresse, ou le lien contient une faute de frappe.",
     cta: "Retour aux formules",
   },
+  scan: {
+    scanning: "Lecture du code…",
+    scanned: "Scanné",
+    skip: "Passer",
+    replay: "Rejouer",
+    details: "Voir la fiche complète",
+  },
+  qr: {
+    metaTitle: "Codes QR",
+    title: "Scannez pour le voir en 3D",
+    intro: "Un code par formule, pour les emballages, les cartes et les présentoirs. Le scan ouvre le flacon en 3D, dans la langue du téléphone qui l’a scanné.",
+    print: "Imprimer la planche",
+    download: "Télécharger le SVG",
+    tip: "Imprimez-le sur au moins 2 cm de large, foncé sur fond clair, en gardant la marge blanche autour du code.",
+    try: "Ouvrir la page",
+  },
   catalog: {
     stat: "D’ingrédients d’origine naturelle, sur toute la gamme",
     categories: { Cleanse: "Nettoyer", Treat: "Traiter", Moisturise: "Hydrater", Colour: "Couleur" },

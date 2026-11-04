@@ -359,6 +359,22 @@ const en = {
     body: "It may have moved, or the link has a typo.",
     cta: "Back to the formulas",
   },
+  scan: {
+    scanning: "Reading the code…",
+    scanned: "Scanned",
+    skip: "Skip",
+    replay: "Play again",
+    details: "Full details",
+  },
+  qr: {
+    metaTitle: "QR codes",
+    title: "Scan to see it in 3D",
+    intro: "One code per formula, for packaging, cards and shelves. A scan opens the bottle in 3D, in the language of the phone that scanned it.",
+    print: "Print the sheet",
+    download: "Download SVG",
+    tip: "Print at least 2 cm wide, dark on light, and keep the white margin around the code.",
+    try: "Open the page",
+  },
   /** Catalogue copy. English reads straight from src/data, so these stay empty here. */
   catalog: {
     stat: "Ingredients of natural origin, across the whole range",

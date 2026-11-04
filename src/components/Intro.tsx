@@ -20,4 +20,5 @@ export default function Intro() {
 
 /** Runs before paint so returning visitors never see the curtain flash. */
 export const introScript =
-  "try{if(sessionStorage.getItem('solenne-intro'))document.documentElement.classList.add('intro-seen');sessionStorage.setItem('solenne-intro','1')}catch(e){}";
+  // A scanned code is its own opening: the scan page skips the curtain.
+  "try{if(sessionStorage.getItem('solenne-intro')||location.pathname.indexOf('/s/')===3)document.documentElement.classList.add('intro-seen');sessionStorage.setItem('solenne-intro','1')}catch(e){}";

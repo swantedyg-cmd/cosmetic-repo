@@ -848,3 +848,26 @@ html.lenis body {
     padding-bottom: 0.2em;
   }
 }
+
+/* The QR sheet prints as just the codes: no site chrome, no backgrounds, one card per cell. */
+@media print {
+  header,
+  footer,
+  .no-print,
+  .skip-link,
+  .intro,
+  canvas {
+    display: none !important;
+  }
+  html,
+  body {
+    background: #fff !important;
+  }
+  .qr-sheet {
+    padding-top: 0;
+  }
+  .qr-card {
+    break-inside: avoid;
+    border-color: #ddd;
+  }
+}
